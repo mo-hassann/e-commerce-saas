@@ -23,6 +23,8 @@ export const userTable = pgTable("user", {
 export const storeTable = pgTable("store", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   name: varchar("name", { length: 255 }).notNull(),
+  storeName: varchar("store_name").unique().notNull(), // the name of the subdomain of the store
+  storeUrl: varchar("url").unique(), // if the user (admin) decided to add custom domain to they store
   description: text("description"),
   adminId: uuid("admin_id")
     .references(() => userTable.id, { onDelete: "cascade" })
@@ -50,10 +52,10 @@ export const brandTable = pgTable("brand", {
 // Product table
 export const productTable = pgTable("product", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
-  title: varchar("title", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
-  discountedPrice: numeric("discounted_price", { precision: 10, scale: 2 }),
+  oldPrice: numeric("old_price", { precision: 10, scale: 2 }),
   categoryId: uuid("category_id").references(() => categoryTable.id), // References the category
   brandId: uuid("brand_id").references(() => brandTable.id), // References the brand
   rating: numeric("rating", { precision: 2, scale: 1 }).default("0"), // Rating out of 5.0
@@ -65,6 +67,8 @@ export const productTable = pgTable("product", {
     .notNull(), // References the store the product belongs to
   reviewedNumber: integer("reviewed_number").default(0), // Number of reviews
   purchases: integer("purchases").default(0), // Number of purchases
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 // Product-Tag relation table (Many-to-many relation between product and tags)
@@ -110,7 +114,8 @@ export const promoCodeTable = pgTable("promo_code", {
     .notNull(), // References to the user (admin) who creates the promo code
   storeId: uuid("store_id").references(() => storeTable.id, { onDelete: "cascade" }), // References store if the promo code is specific to it and if value is null the promo code will work in all the stores in this application (only super admin users who can create a promo code like this)
   productId: uuid("product_id").references(() => productTable.id, { onDelete: "cascade" }), // References product if the promo code is specific to it and if not the promo code will work in all the products in this store
-  validUntil: timestamp("valid_until"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  validUntil: timestamp("valid_until", { withTimezone: true }),
 });
 
 // User interactions table (favorites, ratings)

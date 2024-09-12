@@ -32,3 +32,23 @@ app.all("*", async (c) => {
 });
 
 export default app;
+
+/* 
+  // check if the store exist or not
+  const host = c.req.header("host");
+
+  if (host) {
+    const [subdomain] = host.split(".");
+
+    // if the user is not in the main route (no subdomain case)
+    if (subdomain !== new URL(process.env.NEXT_PUBLIC_APP_URL!).host) {
+      const [store] = await db
+        .select()
+        .from(storeTable)
+        .where((table) => eq(table.storeName, subdomain));
+
+      if (!store) return NextResponse.error();
+    } else if (!pathname.startsWith(LANDING_PAGE_REDIRECT)) {
+      return Response.redirect(new URL(LANDING_PAGE_REDIRECT, c.req.url));
+    }
+*/
