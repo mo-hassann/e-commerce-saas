@@ -1,5 +1,5 @@
 import db from "@/db";
-import { userTable } from "@/db/schemas/user";
+import { userTable } from "@/db/schemas";
 import { eq } from "drizzle-orm";
 
 export function generateRandomUserName(name: string, minChars: number = 12, maxChars: number = 26) {
