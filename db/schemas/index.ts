@@ -118,15 +118,25 @@ export const promoCodeTable = pgTable("promo_code", {
   validUntil: timestamp("valid_until", { withTimezone: true }),
 });
 
-// User interactions table (favorites, ratings)
+// User interactions table (reviews, ratings)
 export const userProductInteractionTable = pgTable("user_product_interaction", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
-  userId: uuid("user_id").references(() => userTable.id, { onDelete: "set null" }), // if the user deleted the rating and purchased status must be there
+  userId: uuid("user_id").references(() => userTable.id, { onDelete: "set null" }), // if the user deleted the rating, purchased status and they review must be there
   productId: uuid("product_id")
     .references(() => productTable.id, { onDelete: "cascade" })
     .notNull(),
-  favorited: boolean("favorited").default(false), // If user favorited the product
+  review: text("review"),
   rating: numeric("rating", { precision: 2, scale: 1 }), // User's rating for the product (1-5)
   purchased: boolean("purchased").default(false), // Whether the user purchased the product
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Favorited Products By the User
+export const userFavoritedProductsTable = pgTable("user_favorited_products_table", {
+  id: uuid("id").defaultRandom().primaryKey().notNull(),
+  userId: uuid("user_id").references(() => userTable.id, { onDelete: "cascade" }),
+  productId: uuid("product_id")
+    .references(() => productTable.id, { onDelete: "cascade" })
+    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

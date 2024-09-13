@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import db from "@/db";
-import { productPropertiesTable, productTable, productTagTable, userProductInteractionTable } from "@/db/schemas";
+import { productPropertiesTable, productTable, productTagTable, userFavoritedProductsTable } from "@/db/schemas";
 import { and, between, eq, gte, isNull, lte, or, sql, desc, inArray, asc } from "drizzle-orm";
 import { stringArrayTransform } from "@/lib/zod";
 
@@ -72,19 +72,43 @@ const app = new Hono()
       }
     }
   )
-  .get("/favorite", verifyAuth(), async (c) => {
-    const { session } = c.get("authUser");
-    const userId = session.user?.id!;
+  .get(
+    "/favorite",
+    /* verifyAuth(), */ async (c) => {
+      // const { session } = c.get("authUser");
+      // const userId = session.user?.id!;
+      const userId = "a9bca186-36ee-482e-9858-6fccb6573acd";
+
+      try {
+        const products = await db.select().from(userFavoritedProductsTable).where(eq(userFavoritedProductsTable.userId, userId)).leftJoin(productTable, eq(userFavoritedProductsTable.productId, productTable.id)).orderBy(desc(userFavoritedProductsTable.createdAt));
+
+        return c.json({ data: products });
+      } catch (error: any) {
+        console.log(error.message);
+        return c.json({ message: error.message, cause: error.cause, error });
+      }
+    }
+  )
+  .post("/favorite", /* verifyAuth(), */ zValidator("json", z.object({ productId: z.string().uuid() })), async (c) => {
+    // const { session } = c.get("authUser");
+    // const userId = session.user?.id!;
+    const userId = "a9bca186-36ee-482e-9858-6fccb6573acd";
+
+    const { productId } = c.req.valid("json");
 
     try {
-      const products = await db
-        .select()
-        .from(userProductInteractionTable)
-        .where(and(eq(userProductInteractionTable.favorited, true), eq(userProductInteractionTable.userId, userId)))
-        .leftJoin(productTable, eq(userProductInteractionTable.productId, productTable.id))
-        .orderBy(desc(userProductInteractionTable.updatedAt));
+      const [favoriteProduct] = await db
+        .select({ id: userFavoritedProductsTable.id })
+        .from(userFavoritedProductsTable)
+        .where(and(eq(userFavoritedProductsTable.productId, productId), eq(userFavoritedProductsTable.userId, userId)));
 
-      return c.json({ data: products });
+      if (favoriteProduct?.id) {
+        await db.delete(userFavoritedProductsTable).where(eq(userFavoritedProductsTable.id, favoriteProduct.id));
+      } else {
+        await db.insert(userFavoritedProductsTable).values({ productId, userId });
+      }
+
+      return c.json({ message: "product favorite successfully" });
     } catch (error: any) {
       console.log(error.message);
       return c.json({ message: error.message, cause: error.cause, error });

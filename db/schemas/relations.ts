@@ -1,11 +1,12 @@
 import { relations } from "drizzle-orm";
-import { userTable, storeTable, categoryTable, tagTable, brandTable, productTable, productTagTable, productPropertiesTable, promoCodeTable, userProductInteractionTable, productImageTable } from "./";
+import { userTable, storeTable, categoryTable, tagTable, brandTable, productTable, productTagTable, productPropertiesTable, promoCodeTable, userProductInteractionTable, productImageTable, userFavoritedProductsTable } from "./";
 
 // User relations
 export const userRelations = relations(userTable, ({ one, many }) => ({
   stores: many(storeTable), // A user can be an admin of many stores
   products: many(productTable), // A user (admin) can manage many products
   interactions: many(userProductInteractionTable), // A user can have many interactions (favorites, ratings)
+  favorites: many(userFavoritedProductsTable), // A user can have many favorites
   promoCodes: many(promoCodeTable), // A user (admin) can have many promo codes
 }));
 
@@ -57,6 +58,7 @@ export const productRelations = relations(productTable, ({ one, many }) => ({
   images: many(productImageTable), // A product can have many product images
   promoCodes: many(promoCodeTable), // A product can have many promo codes
   interactions: many(userProductInteractionTable), // A product can have many user interactions (favorites, ratings)
+  favorites: many(userFavoritedProductsTable), // A product can have many user favorites
 }));
 
 // Product-Tag relations (junction table for many-to-many relationship)
@@ -113,4 +115,15 @@ export const userProductInteractionRelations = relations(userProductInteractionT
     fields: [userProductInteractionTable.productId],
     references: [productTable.id],
   }), // An interaction is linked to one product
+}));
+// User-Product Favorite relations
+export const userFavoritedProductsRelations = relations(userFavoritedProductsTable, ({ one }) => ({
+  user: one(userTable, {
+    fields: [userFavoritedProductsTable.userId],
+    references: [userTable.id],
+  }), // A Favorite belongs to one user
+  product: one(productTable, {
+    fields: [userFavoritedProductsTable.productId],
+    references: [productTable.id],
+  }), // A Favorite is linked to one product
 }));
