@@ -16,7 +16,7 @@ export const userTable = pgTable("user", {
   emailVerified: timestamp("email_verified"),
   image: text("image"),
   dateOfBirth: date("date_of_birth"),
-  role: roleEnum("role").default("USER"), // Role for users (USER, ADMIN)
+  role: roleEnum("role").notNull().default("USER"), // Role for users (USER, ADMIN)
 });
 
 // Store table
@@ -128,4 +128,5 @@ export const userProductInteractionTable = pgTable("user_product_interaction", {
   favorited: boolean("favorited").default(false), // If user favorited the product
   rating: numeric("rating", { precision: 2, scale: 1 }), // User's rating for the product (1-5)
   purchased: boolean("purchased").default(false), // Whether the user purchased the product
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -31,7 +31,7 @@ export function generateRandomUserName(name: string, minChars: number = 12, maxC
 export const getUserWithEmail = async (email: string) => {
   try {
     const user = await db
-      .select({ id: userTable.id, name: userTable.name, image: userTable.image, email: userTable.email, password: userTable.password })
+      .select({ id: userTable.id, name: userTable.name, image: userTable.image, email: userTable.email, password: userTable.password, role: userTable.role })
       .from(userTable)
       .where(eq(userTable.email, email))
       .then((table) => table[0]);

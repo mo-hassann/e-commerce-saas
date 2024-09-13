@@ -1,10 +1,10 @@
-import { getAuthUser, verifyAuth } from "@hono/auth-js";
+import { verifyAuth } from "@hono/auth-js";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import db from "@/db";
-import { productPropertiesTable, productTable, productTagTable } from "@/db/schemas";
-import { and, between, eq, gte, isNull, lte, or, sql, desc, arrayContains, inArray, asc } from "drizzle-orm";
+import { productPropertiesTable, productTable, productTagTable, userProductInteractionTable } from "@/db/schemas";
+import { and, between, eq, gte, isNull, lte, or, sql, desc, inArray, asc } from "drizzle-orm";
 import { stringArrayTransform } from "@/lib/zod";
 
 const app = new Hono()
@@ -72,14 +72,22 @@ const app = new Hono()
       }
     }
   )
-  .post("/", zValidator("json", z.object({ arg1: z.boolean() })), (c) => {
-    try {
-      const { arg1 } = c.req.valid("json");
-      if (arg1) throw new Error();
+  .get("/favorite", verifyAuth(), async (c) => {
+    const { session } = c.get("authUser");
+    const userId = session.user?.id!;
 
-      return c.json({ message: "this is post route!", data: "some data for the post method", arg1 });
-    } catch (error) {
-      return c.json({ errorMessage: "something went wrong" }, 400);
+    try {
+      const products = await db
+        .select()
+        .from(userProductInteractionTable)
+        .where(and(eq(userProductInteractionTable.favorited, true), eq(userProductInteractionTable.userId, userId)))
+        .leftJoin(productTable, eq(userProductInteractionTable.productId, productTable.id))
+        .orderBy(desc(userProductInteractionTable.updatedAt));
+
+      return c.json({ data: products });
+    } catch (error: any) {
+      console.log(error.message);
+      return c.json({ message: error.message, cause: error.cause, error });
     }
   });
 
