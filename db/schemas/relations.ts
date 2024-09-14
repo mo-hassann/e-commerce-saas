@@ -1,10 +1,11 @@
 import { relations } from "drizzle-orm";
-import { userTable, storeTable, categoryTable, tagTable, brandTable, productTable, productTagTable, productPropertiesTable, promoCodeTable, userProductInteractionTable, productImageTable, userFavoritedProductsTable } from "./";
+import { userTable, storeTable, categoryTable, tagTable, brandTable, productTable, productTagTable, productPropertiesTable, promoCodeTable, userProductInteractionTable, productImageTable, userFavoritedProductsTable, userPurchaseTable } from "./";
 
 // User relations
 export const userRelations = relations(userTable, ({ one, many }) => ({
   stores: many(storeTable), // A user can be an admin of many stores
   products: many(productTable), // A user (admin) can manage many products
+  purchases: many(userPurchaseTable), // A user can have many purchases
   interactions: many(userProductInteractionTable), // A user can have many interactions (favorites, ratings)
   favorites: many(userFavoritedProductsTable), // A user can have many favorites
   promoCodes: many(promoCodeTable), // A user (admin) can have many promo codes
@@ -58,6 +59,7 @@ export const productRelations = relations(productTable, ({ one, many }) => ({
   images: many(productImageTable), // A product can have many product images
   promoCodes: many(promoCodeTable), // A product can have many promo codes
   interactions: many(userProductInteractionTable), // A product can have many user interactions (favorites, ratings)
+  purchases: many(userPurchaseTable), // A product can have many user purchases
   favorites: many(userFavoritedProductsTable), // A product can have many user favorites
 }));
 
@@ -105,6 +107,18 @@ export const promoCodeRelations = relations(promoCodeTable, ({ one }) => ({
   }), // A promo code can be applied to one product if no relation, the promo code will work in all the stores in this application (only super admin users who can create a promo code like this)
 }));
 
+// User-Product purchases relations
+export const userPurchasesRelations = relations(userPurchaseTable, ({ one }) => ({
+  user: one(userTable, {
+    fields: [userPurchaseTable.userId],
+    references: [userTable.id],
+  }), // A purchase belongs to one user
+  product: one(productTable, {
+    fields: [userPurchaseTable.productId],
+    references: [productTable.id],
+  }), // A purchase is linked to one product
+}));
+
 // User-Product Interaction relations
 export const userProductInteractionRelations = relations(userProductInteractionTable, ({ one }) => ({
   user: one(userTable, {
@@ -116,6 +130,7 @@ export const userProductInteractionRelations = relations(userProductInteractionT
     references: [productTable.id],
   }), // An interaction is linked to one product
 }));
+
 // User-Product Favorite relations
 export const userFavoritedProductsRelations = relations(userFavoritedProductsTable, ({ one }) => ({
   user: one(userTable, {

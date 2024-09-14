@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, varchar, date, timestamp, numeric, integer, boolean, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, varchar, date, timestamp, numeric, integer, boolean, pgEnum, unique } from "drizzle-orm/pg-core";
 
 // Roles enum for user
 export const roleEnum = pgEnum("role", ["USER", "ADMIN"]);
@@ -118,18 +118,37 @@ export const promoCodeTable = pgTable("promo_code", {
   validUntil: timestamp("valid_until", { withTimezone: true }),
 });
 
-// User interactions table (reviews, ratings)
-export const userProductInteractionTable = pgTable("user_product_interaction", {
+// User purchase product table
+export const userPurchaseTable = pgTable("user_purchase", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
-  userId: uuid("user_id").references(() => userTable.id, { onDelete: "set null" }), // if the user deleted the rating, purchased status and they review must be there
+  userId: uuid("user_id").references(() => userTable.id, { onDelete: "set null" }), // if the user account is deleted the purchase table must be exist to aper in admin statistics
   productId: uuid("product_id")
     .references(() => productTable.id, { onDelete: "cascade" })
     .notNull(),
-  review: text("review"),
-  rating: numeric("rating", { precision: 2, scale: 1 }), // User's rating for the product (1-5)
-  purchased: boolean("purchased").default(false), // Whether the user purchased the product
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  quantity: integer("quantity").notNull().default(1),
+
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// User interactions table (reviews, ratings)
+export const userProductInteractionTable = pgTable(
+  "user_product_interaction",
+  {
+    id: uuid("id").defaultRandom().primaryKey().notNull(),
+    userId: uuid("user_id").references(() => userTable.id, { onDelete: "set null" }), // if the user account is deleted the rating and review will stay
+    productId: uuid("product_id")
+      .references(() => productTable.id, { onDelete: "cascade" })
+      .notNull(),
+    review: text("review"),
+    rating: numeric("rating", { precision: 2, scale: 1 }).notNull(), // User's rating for the product (1-5)
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    // the user can make one interaction for the same product
+    unq: unique("unique_user_product_interaction").on(table.userId, table.productId),
+  })
+);
 
 // Favorited Products By the User
 export const userFavoritedProductsTable = pgTable("user_favorited_products_table", {

@@ -8,6 +8,10 @@ const app = new Hono().basePath("/api");
 
 app.all("*", logger());
 app.use("*", initAuthConfig(getAuthConfig));
+app.onError((err, c) => {
+  console.error(`${err}`);
+  return c.json({ errorMessage: err.message, fullError: err }, 500);
+});
 // protect all routes
 // app.use("/*", verifyAuth());
 

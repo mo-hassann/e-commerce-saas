@@ -1,9 +1,9 @@
 import { verifyAuth } from "@hono/auth-js";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
+import { number, z } from "zod";
 import db from "@/db";
-import { productPropertiesTable, productTable, productTagTable, userFavoritedProductsTable } from "@/db/schemas";
+import { productPropertiesTable, productTable, productTagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
 import { and, between, eq, gte, isNull, lte, or, sql, desc, inArray, asc } from "drizzle-orm";
 import { stringArrayTransform } from "@/lib/zod";
 
@@ -109,6 +109,65 @@ const app = new Hono()
       }
 
       return c.json({ message: "product favorite successfully" });
+    } catch (error: any) {
+      console.log(error.message);
+      return c.json({ message: error.message, cause: error.cause, error });
+    }
+  })
+  .get("/interactions", zValidator("query", z.object({ productId: z.string().uuid() })), async (c) => {
+    const { productId } = c.req.valid("query");
+
+    try {
+      const interactions = await db.select().from(userProductInteractionTable).where(eq(userProductInteractionTable.productId, productId)).orderBy(desc(userProductInteractionTable.updatedAt));
+
+      return c.json({ data: interactions });
+    } catch (error: any) {
+      console.log(error.message);
+      return c.json({ message: error.message, cause: error.cause, error });
+    }
+  })
+  .get("/user-interactions", /* verifyAuth(), */ zValidator("query", z.object({ productId: z.string().uuid() })), async (c) => {
+    // const { session } = c.get("authUser");
+    // const userId = session.user?.id!;
+    const userId = "a9bca186-36ee-482e-9858-6fccb6573acd";
+
+    const { productId } = c.req.valid("query");
+
+    try {
+      const interactions = await db
+        .select()
+        .from(userProductInteractionTable)
+        .where(and(eq(userProductInteractionTable.userId, userId), eq(userProductInteractionTable.productId, productId)))
+        .orderBy(desc(userProductInteractionTable.updatedAt));
+
+      return c.json({ data: interactions });
+    } catch (error: any) {
+      console.log(error.message);
+      return c.json({ message: error.message, cause: error.cause, error });
+    }
+  })
+  .post("/interactions", /* verifyAuth(), */ zValidator("json", z.object({ productId: z.string().uuid(), rating: z.number(), review: z.string().optional() })), async (c) => {
+    // const { session } = c.get("authUser");
+    // const userId = session.user?.id!;
+    const userId = "a9bca186-36ee-482e-9858-6fccb6573acd";
+
+    const { productId, rating, review } = c.req.valid("json");
+
+    try {
+      // check for user current product purchase
+      const [productPurchased] = await db
+        .select()
+        .from(userPurchaseTable)
+        .where(and(eq(userPurchaseTable.userId, userId), eq(userPurchaseTable.productId, productId)));
+
+      if (!productPurchased) return c.json({ message: "you must purchase the product to be able to review it" }, 400);
+
+      await db
+        .insert(userProductInteractionTable)
+        .values({ productId, userId, rating: `${rating}`, review })
+        .onConflictDoUpdate({ target: [userProductInteractionTable.productId, userProductInteractionTable.userId], set: { rating: `${rating}`, review } });
+
+      return c.json({ message: "user interaction added successfully" });
     } catch (error: any) {
       console.log(error.message);
       return c.json({ message: error.message, cause: error.cause, error });
