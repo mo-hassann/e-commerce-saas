@@ -1,11 +1,14 @@
+import db from "@/db";
+
 import { verifyAuth } from "@hono/auth-js";
 import { Hono } from "hono";
+
+import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { number, z } from "zod";
-import db from "@/db";
-import { productPropertiesTable, productTable, productTagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
-import { and, between, eq, gte, isNull, lte, or, sql, desc, inArray, asc } from "drizzle-orm";
 import { stringArrayTransform } from "@/lib/zod";
+
+import { and, eq, sql, desc, inArray, asc } from "drizzle-orm";
+import { productPropertiesTable, productTable, productTagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
 
 const app = new Hono()
   .get(
@@ -47,7 +50,21 @@ const app = new Hono()
 
       try {
         const products = await db
-          .select()
+          .select({
+            id: productTable.id,
+            name: productTable.name,
+            brandId: productTable.brandId,
+            categoryId: productTable.categoryId,
+            oldPrice: productTable.oldPrice,
+            price: productTable.price,
+            reviewedNumber: productTable.reviewedNumber,
+            rating: productTable.rating,
+            purchases: productTable.purchases,
+            tagId: productTagTable.tagId,
+            stock: productPropertiesTable.stock,
+            colors: productPropertiesTable.color,
+            sizes: productPropertiesTable.size,
+          })
           .from(productTable)
           .leftJoin(productTagTable, eq(productTable.id, productTagTable.productId))
           .leftJoin(productPropertiesTable, eq(productTable.id, productPropertiesTable.productId))
@@ -65,34 +82,27 @@ const app = new Hono()
             `
           )
           .orderBy(...orderConditions);
-        return c.json({ message: "this is public route!", products });
-      } catch (error: any) {
-        console.log(error.message);
-        return c.json({ message: error.message, cause: error.cause, error });
-      }
-    }
-  )
-  .get(
-    "/favorite",
-    /* verifyAuth(), */ async (c) => {
-      // const { session } = c.get("authUser");
-      // const userId = session.user?.id!;
-      const userId = "a9bca186-36ee-482e-9858-6fccb6573acd";
-
-      try {
-        const products = await db.select().from(userFavoritedProductsTable).where(eq(userFavoritedProductsTable.userId, userId)).leftJoin(productTable, eq(userFavoritedProductsTable.productId, productTable.id)).orderBy(desc(userFavoritedProductsTable.createdAt));
-
         return c.json({ data: products });
       } catch (error: any) {
-        console.log(error.message);
-        return c.json({ message: error.message, cause: error.cause, error });
+        return c.json({ message: error.message, cause: error.cause, error }, 400);
       }
     }
   )
-  .post("/favorite", /* verifyAuth(), */ zValidator("json", z.object({ productId: z.string().uuid() })), async (c) => {
-    // const { session } = c.get("authUser");
-    // const userId = session.user?.id!;
-    const userId = "a9bca186-36ee-482e-9858-6fccb6573acd";
+  .get("/favorite", verifyAuth(), async (c) => {
+    const { session } = c.get("authUser");
+    const userId = session.user?.id!;
+
+    try {
+      const products = await db.select().from(userFavoritedProductsTable).where(eq(userFavoritedProductsTable.userId, userId)).leftJoin(productTable, eq(userFavoritedProductsTable.productId, productTable.id)).orderBy(desc(userFavoritedProductsTable.createdAt));
+
+      return c.json({ data: products });
+    } catch (error: any) {
+      return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
+    }
+  })
+  .post("/favorite", verifyAuth(), zValidator("json", z.object({ productId: z.string().uuid() })), async (c) => {
+    const { session } = c.get("authUser");
+    const userId = session.user?.id!;
 
     const { productId } = c.req.valid("json");
 
@@ -123,13 +133,12 @@ const app = new Hono()
       return c.json({ data: interactions });
     } catch (error: any) {
       console.log(error.message);
-      return c.json({ message: error.message, cause: error.cause, error });
+      return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
     }
   })
-  .get("/user-interactions", /* verifyAuth(), */ zValidator("query", z.object({ productId: z.string().uuid() })), async (c) => {
-    // const { session } = c.get("authUser");
-    // const userId = session.user?.id!;
-    const userId = "a9bca186-36ee-482e-9858-6fccb6573acd";
+  .get("/user-interactions", verifyAuth(), zValidator("query", z.object({ productId: z.string().uuid() })), async (c) => {
+    const { session } = c.get("authUser");
+    const userId = session.user?.id!;
 
     const { productId } = c.req.valid("query");
 
@@ -142,14 +151,12 @@ const app = new Hono()
 
       return c.json({ data: interactions });
     } catch (error: any) {
-      console.log(error.message);
-      return c.json({ message: error.message, cause: error.cause, error });
+      return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
     }
   })
-  .post("/interactions", /* verifyAuth(), */ zValidator("json", z.object({ productId: z.string().uuid(), rating: z.number(), review: z.string().optional() })), async (c) => {
-    // const { session } = c.get("authUser");
-    // const userId = session.user?.id!;
-    const userId = "a9bca186-36ee-482e-9858-6fccb6573acd";
+  .post("/interactions", verifyAuth(), zValidator("json", z.object({ productId: z.string().uuid(), rating: z.number(), review: z.string().optional() })), async (c) => {
+    const { session } = c.get("authUser");
+    const userId = session.user?.id!;
 
     const { productId, rating, review } = c.req.valid("json");
 
@@ -171,6 +178,17 @@ const app = new Hono()
     } catch (error: any) {
       console.log(error.message);
       return c.json({ message: error.message, cause: error.cause, error });
+    }
+  })
+  .get("/:productId", zValidator("param", z.object({ productId: z.string().uuid() })), async (c) => {
+    const { productId } = c.req.valid("param");
+    try {
+      const [product] = await db.select().from(productTable).where(eq(productTable.id, productId));
+
+      return c.json({ data: product });
+    } catch (error: any) {
+      console.log(error.message);
+      return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
     }
   });
 

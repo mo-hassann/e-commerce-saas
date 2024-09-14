@@ -1,11 +1,11 @@
 export async function handleErrors(response: Response) {
   const errorResponse = await response.json();
-  let errorMessage = "server error"; // default error message
+  let errorMessage;
   let errorCause;
 
   if (typeof errorResponse === "object") {
     if ("errorMessage" in errorResponse || "message" in errorResponse) {
-      errorMessage = errorResponse.errorMessage || errorResponse.message;
+      errorMessage = errorResponse.errorMessage || errorResponse.message || "server error";
     }
 
     if ("cause" in errorResponse) {

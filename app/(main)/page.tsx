@@ -1,13 +1,10 @@
-import SignOutBtn from "@/components/auth/sign-out-btn";
-import { currentUser } from "@/lib/auth/current-user";
+import ProductsContainer from "@/components/product/products-container";
 
-export default async function Home() {
-  const user = await currentUser();
+export default function Home() {
   return (
-    <div>
-      starting E-commerce page
-      {JSON.stringify(user)}
-      <SignOutBtn>sign out</SignOutBtn>
+    <div className="p-6">
+      <h1>some products</h1>
+      <ProductsContainer />;
     </div>
   );
 }
