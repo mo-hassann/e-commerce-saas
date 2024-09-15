@@ -1,7 +1,7 @@
 import { NextAuthConfig } from "next-auth";
 
 import Credentials from "next-auth/providers/credentials";
-import { signInFormSchema } from "./validators";
+import { signInFormSchema } from "./validators/forms";
 
 import bcrypt from "bcryptjs";
 import { getUserWithEmail } from "./lib/auth/user";

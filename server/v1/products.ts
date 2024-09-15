@@ -5,71 +5,50 @@ import { Hono } from "hono";
 
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { stringArrayTransform } from "@/lib/zod";
 
 import { and, eq, sql, desc, inArray, asc } from "drizzle-orm";
 import { productPropertiesTable, productTable, productTagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
+import { productSearchFilters } from "@/validators/products";
 
 const app = new Hono()
-  .get(
-    "/",
-    zValidator(
-      "query",
-      z.object({
-        brandIds: stringArrayTransform.pipe(z.array(z.string().uuid())).default([]), // we use this costume method because we are dealing with url queries and all the data in type string
-        categoryIds: stringArrayTransform.pipe(z.array(z.string().uuid())).default([]),
-        tagIds: stringArrayTransform.pipe(z.array(z.string().uuid())).default([]),
-        minPrice: z.coerce.number().optional(),
-        maxPrice: z.coerce.number().optional(),
-        minRating: z.coerce.number().optional(),
-        maxRating: z.coerce.number().optional(),
-        searchKey: z.string().optional(),
-        color: z.string().optional(),
-        size: z.enum(["XS", "S", "M", "L", "XL", "XXL"]).optional(),
-        sortBy: z.enum(["POPULAR", "NEWEST", "HIGH_PRICE", "LOW_PRICE"]).default("POPULAR"),
-      })
-    ),
-    async (c) => {
-      const { brandIds, categoryIds, maxPrice, maxRating, minPrice, minRating, searchKey, tagIds, sortBy, color, size } = c.req.valid("query");
-      let orderConditions = [];
+  .get("/", zValidator("query", productSearchFilters), async (c) => {
+    const { brandIds, categoryIds, maxPrice, maxRating, minPrice, minRating, searchKey, tagIds, sortBy, color, size } = c.req.valid("query");
+    let orderConditions = [];
 
-      switch (sortBy) {
-        case "HIGH_PRICE":
-          orderConditions.push(desc(productTable.price), desc(productTable.rating)), desc(productTable.reviewedNumber);
-          break;
-        case "LOW_PRICE":
-          orderConditions.push(asc(productTable.price), desc(productTable.rating)), desc(productTable.reviewedNumber);
-          break;
-        case "NEWEST":
-          orderConditions.push(desc(productTable.createdAt), desc(productTable.rating), desc(productTable.reviewedNumber));
-          break;
-        case "POPULAR": // POPULAR is the default case
-          orderConditions.push(desc(productTable.rating), desc(productTable.reviewedNumber), desc(productTable.createdAt));
-          break;
-      }
+    switch (sortBy) {
+      case "HIGH_PRICE":
+        orderConditions.push(desc(productTable.price), desc(productTable.rating)), desc(productTable.reviewedNumber);
+        break;
+      case "LOW_PRICE":
+        orderConditions.push(asc(productTable.price), desc(productTable.rating)), desc(productTable.reviewedNumber);
+        break;
+      case "NEWEST":
+        orderConditions.push(desc(productTable.createdAt), desc(productTable.rating), desc(productTable.reviewedNumber));
+        break;
+      case "POPULAR": // POPULAR is the default case
+        orderConditions.push(desc(productTable.rating), desc(productTable.reviewedNumber), desc(productTable.createdAt));
+        break;
+    }
 
-      try {
-        const products = await db
-          .select({
-            id: productTable.id,
-            name: productTable.name,
-            brandId: productTable.brandId,
-            categoryId: productTable.categoryId,
-            oldPrice: productTable.oldPrice,
-            price: productTable.price,
-            reviewedNumber: productTable.reviewedNumber,
-            rating: productTable.rating,
-            purchases: productTable.purchases,
-            tagId: productTagTable.tagId,
-            stock: productPropertiesTable.stock,
-            colors: productPropertiesTable.color,
-            sizes: productPropertiesTable.size,
-          })
-          .from(productTable)
-          .leftJoin(productTagTable, eq(productTable.id, productTagTable.productId))
-          .leftJoin(productPropertiesTable, eq(productTable.id, productPropertiesTable.productId))
-          .where(
-            sql`${brandIds.length > 0 ? sql`${inArray(productTable.brandId, brandIds)}` : sql`1=1`}
+    try {
+      const products = await db
+        .select({
+          id: productTable.id,
+          name: productTable.name,
+          brandId: productTable.brandId,
+          categoryId: productTable.categoryId,
+          oldPrice: productTable.oldPrice,
+          price: productTable.price,
+          reviewedNumber: productTable.reviewedNumber,
+          rating: productTable.rating,
+          purchases: productTable.purchases,
+          description: productTable.description,
+        })
+        .from(productTable)
+        .leftJoin(productTagTable, eq(productTable.id, productTagTable.productId))
+        .leftJoin(productPropertiesTable, eq(productTable.id, productPropertiesTable.productId))
+        .where(
+          sql`${brandIds.length > 0 ? sql`${inArray(productTable.brandId, brandIds)}` : sql`1=1`}
             AND ${categoryIds.length > 0 ? sql`${inArray(productTable.categoryId, categoryIds)}` : sql`1=1`}
             AND ${tagIds.length > 0 ? sql`${inArray(productTagTable.tagId, tagIds)}` : sql`1=1`}
             AND ${minPrice ? sql`${productTable.price} >= ${minPrice}` : sql`1=1`}
@@ -80,14 +59,14 @@ const app = new Hono()
             AND ${size ? sql`${productPropertiesTable.size} = ${size}` : sql`1=1`}
             AND ${searchKey ? sql`${productTable.name} ILIKE ${`%${searchKey}%`} OR ${productTable.description} ILIKE ${`%${searchKey}%`}` : sql`1=1`}
             `
-          )
-          .orderBy(...orderConditions);
-        return c.json({ data: products });
-      } catch (error: any) {
-        return c.json({ message: error.message, cause: error.cause, error }, 400);
-      }
+        )
+        .orderBy(...orderConditions)
+        .groupBy(productTable.id);
+      return c.json({ data: products });
+    } catch (error: any) {
+      return c.json({ message: error.message, cause: error.cause, error }, 400);
     }
-  )
+  })
   .get("/favorite", verifyAuth(), async (c) => {
     const { session } = c.get("authUser");
     const userId = session.user?.id!;

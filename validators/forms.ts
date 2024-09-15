@@ -2,11 +2,6 @@ import { z } from "zod";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { userTable } from "@/db/schemas";
 
-// db tables schemas
-export const userSchema = createInsertSchema(userTable, {
-  email: (schema) => schema.email.email(),
-});
-
 // form schemas
 export const signInFormSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email"),

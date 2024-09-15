@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { signInFormSchema } from "@/validators";
+import { signInFormSchema } from "@/validators/forms";
 
 const FormSchema = signInFormSchema;
 type FormSchemaType = z.infer<typeof FormSchema>;
