@@ -1,4 +1,4 @@
-import ProductFiltersSidebar from "@/components/product/product-filters-sidebar";
+import ProductFiltersSidebar from "@/components/product/filters-sidebar";
 import ProductsContainer from "@/components/product/products-container";
 
 export default function SearchPage() {

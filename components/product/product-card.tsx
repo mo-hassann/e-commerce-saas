@@ -14,7 +14,7 @@ export default function ProductCard({ orientation = "VERTICAL", product }: props
     <div className={cn("w-[270px] h-auto flex flex-col p-3.5 rounded-lg border hover:shadow-md cursor-pointer", orientation === "HORIZONTAL" && "gap-4 flex-row w-full")}>
       <div className="rounded-lg overflow-hidden group relative cursor-pointer shadow-inner flex-shrink-0">
         <div className={cn("rounded-lg w-full h-[200px] overflow-hidden", orientation === "HORIZONTAL" && "w-[200px]")}>
-          <Image className="size-full object-cover object-center group-hover:scale-125 transition duration-1000" width={100} height={100} src={"/product.bmp"} alt="product" />
+          <Image className="size-full object-cover object-center group-hover:scale-125 group-hover:translate-y-7 transition duration-1000" width={100} height={100} src={"/product.jpg"} alt="product" />
         </div>
         <div className="absolute top-3 left-3 bg-secondary rounded-sm flex items-center justify-center h-5 w-auto px-3 capitalize text-sm text-white">hot</div>
         <div className="absolute bottom-0 w-full h-1/2 bg-[linear-gradient(0deg,#000,transparent)] opacity-0 group-hover:opacity-30" />

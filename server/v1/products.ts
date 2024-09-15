@@ -48,9 +48,9 @@ const app = new Hono()
         .leftJoin(productTagTable, eq(productTable.id, productTagTable.productId))
         .leftJoin(productPropertiesTable, eq(productTable.id, productPropertiesTable.productId))
         .where(
-          sql`${brandIds.length > 0 ? sql`${inArray(productTable.brandId, brandIds)}` : sql`1=1`}
-            AND ${categoryIds.length > 0 ? sql`${inArray(productTable.categoryId, categoryIds)}` : sql`1=1`}
-            AND ${tagIds.length > 0 ? sql`${inArray(productTagTable.tagId, tagIds)}` : sql`1=1`}
+          sql`${brandIds?.split("|")[0] ? sql`${inArray(productTable.brandId, brandIds.split("|"))}` : sql`1=1`}
+            AND ${categoryIds?.split("|")[0] ? sql`${inArray(productTable.categoryId, categoryIds.split("|"))}` : sql`1=1`}
+            AND ${tagIds?.split("|")[0] ? sql`${inArray(productTagTable.tagId, tagIds.split("|"))}` : sql`1=1`}
             AND ${minPrice ? sql`${productTable.price} >= ${minPrice}` : sql`1=1`}
             AND ${maxPrice ? sql`${productTable.price} <= ${maxPrice}` : sql`1=1`}
             AND ${minRating ? sql`${productTable.rating} >= ${minRating}` : sql`1=1`}

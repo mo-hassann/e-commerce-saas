@@ -13,8 +13,7 @@ type HonoClientRoute = {
 // Define types for success and error responses
 type SuccessResponse<T> = {
   isError: false;
-  data: T;
-};
+} & T;
 
 type ErrorResponse = {
   isError: true;
@@ -29,12 +28,7 @@ type AvailableMethods<T> = {
   [K in HttpMethod]: K extends keyof T ? (T[K] extends Function ? K : never) : never;
 }[HttpMethod];
 
-export const requestData = async <T extends HonoClientRoute, M extends AvailableMethods<T>>(
-  route: T,
-  method: M,
-  args: Parameters<NonNullable<T[M]>>[0] = {} as Parameters<NonNullable<T[M]>>[0], // Default to empty object for GET, pass args for POST
-  options?: Parameters<NonNullable<T[M]>>[1] // Optional request options (e.g., headers, body)
-): Promise<RequestDataResponse<InferResponseType<NonNullable<T[M]>>>> => {
+export async function requestData<T extends HonoClientRoute, M extends AvailableMethods<T>>(route: T, method: M, args?: Parameters<NonNullable<T[M]>>[0], options?: ClientRequestOptions<any>): Promise<RequestDataResponse<Exclude<InferResponseType<NonNullable<T[M]>>, { errorMessage: string }>>> {
   const methodFn = route[method];
   if (typeof methodFn !== "function") {
     throw new Error(`Method ${method} is not supported on this route`);
@@ -55,7 +49,7 @@ export const requestData = async <T extends HonoClientRoute, M extends Available
 
     // Safely parse JSON response
     const json = JSON.parse(text);
-    console.log("Fetched data from server:", json);
+    console.log(`fetch data from server`, json);
 
     // Check if response is okay (status code 2xx)
     if (!res.ok) {
@@ -66,14 +60,11 @@ export const requestData = async <T extends HonoClientRoute, M extends Available
     }
 
     // Return success response with type assertion
-    return {
-      isError: false,
-      data: json as InferResponseType<NonNullable<T[M]>>,
-    };
+    return json as Exclude<InferResponseType<NonNullable<T[M]>>, { errorMessage: string }>;
   } catch (error: any) {
     return {
       isError: true,
       errorMessage: `Request failed: ${error.message}`,
     };
   }
-};
+}

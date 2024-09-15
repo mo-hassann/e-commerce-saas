@@ -12,8 +12,6 @@ app.onError((err, c) => {
   console.error(`${err}`);
   return c.json({ errorMessage: err.message, fullError: err }, 500);
 });
-// protect all routes
-// app.use("/*", verifyAuth());
 
 const routes = app.route("/v1", v1);
 

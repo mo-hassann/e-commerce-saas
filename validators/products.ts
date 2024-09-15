@@ -1,10 +1,9 @@
-import { stringArrayTransform } from "@/lib/zod";
 import { z } from "zod";
 
 export const productSearchFilters = z.object({
-  brandIds: stringArrayTransform.pipe(z.array(z.string().uuid())).default([]), // we use this costume method because we are dealing with url queries and all the data in type string
-  categoryIds: stringArrayTransform.pipe(z.array(z.string().uuid())).default([]),
-  tagIds: stringArrayTransform.pipe(z.array(z.string().uuid())).default([]),
+  brandIds: z.string().optional(),
+  categoryIds: z.string().optional(),
+  tagIds: z.string().optional(),
   minPrice: z.coerce.number().optional(),
   maxPrice: z.coerce.number().optional(),
   minRating: z.coerce.number().optional(),

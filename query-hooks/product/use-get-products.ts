@@ -14,7 +14,7 @@ export type getProductsResType = Extract<resT, { data: any }>["data"][0];
 
 export default function useGetProducts(values: reqT) {
   const query = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", values],
     queryFn: async () => {
       const res = await $get({ query: { ...values } });
 
