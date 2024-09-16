@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import test from "./test";
 import products from "./products";
 import category from "./category";
+import brand from "./brand";
 import auth from "./auth";
 
 const app = new Hono();
@@ -11,6 +12,7 @@ const routes = app /*  */
   .route("/auth", auth)
   .route("/test", test)
   .route("/products", products)
-  .route("/category", category);
+  .route("/category", category)
+  .route("/brand", brand);
 
 export default routes;

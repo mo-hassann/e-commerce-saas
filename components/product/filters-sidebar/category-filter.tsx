@@ -9,7 +9,7 @@ type props = {
   categories: { id: string; name: string }[];
 };
 
-export default function CategoryForm({ categories }: props) {
+export default function CategoryFilter({ categories }: props) {
   const { categoryIds } = useProductFilterKeys();
   const { updateSearchParams } = useUpdateSearchParams();
   const [activeItems, setActiveItems] = useState<string[]>(categoryIds ? categoryIds.split("|") : []);
