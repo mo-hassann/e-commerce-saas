@@ -1,0 +1,20 @@
+.range-slider {
+  background: hsl(var(--foreground) / 90%);
+  height: 3px;
+}
+
+.range-slider .range-slider__thumb {
+  background: hsl(var(--primary));
+  width: 18px;
+  height: 18px;
+}
+
+.range-slider .range-slider__thumb:first-of-type {
+  background: hsl(var(--background));
+  border: hsl(var(--primary)) 3px solid;
+}
+
+.range-slider .range-slider__range {
+  background: hsl(var(--primary));
+  height: 4px;
+}

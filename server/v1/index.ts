@@ -1,10 +1,12 @@
 import { Hono } from "hono";
 
+import auth from "./auth";
 import test from "./test";
 import products from "./products";
 import category from "./category";
+import tag from "./tag";
 import brand from "./brand";
-import auth from "./auth";
+import productProperties from "./product-properties";
 
 const app = new Hono();
 
@@ -13,6 +15,8 @@ const routes = app /*  */
   .route("/test", test)
   .route("/products", products)
   .route("/category", category)
-  .route("/brand", brand);
+  .route("/tag", tag)
+  .route("/brand", brand)
+  .route("/product-properties", productProperties);
 
 export default routes;

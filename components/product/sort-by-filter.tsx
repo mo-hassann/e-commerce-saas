@@ -20,7 +20,7 @@ export default function SortByFilter() {
         </SelectTrigger>
         <SelectContent>
           {filters.map((filter) => (
-            <SelectItem className="capitalize" value={filter.id}>
+            <SelectItem key={filter.id} className="capitalize" value={filter.id}>
               {filter.name}
             </SelectItem>
           ))}
