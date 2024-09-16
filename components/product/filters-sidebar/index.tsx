@@ -15,7 +15,7 @@ export default async function ProductFiltersSidebar() {
   if (categoriesRes.isError || brandsRes.isError || productPropertiesRes.isError || tagsRes.isError) return <div>something went wrong while fetching the data.</div>;
 
   return (
-    <div className="bg-muted border rounded-md flex-shrink-0 w-[260px] min-h-[60vh]">
+    <div className="sticky top-4 bg-muted border rounded-md flex-shrink-0 w-[260px] h-fit">
       {categoriesRes.data.length > 0 && <CategoryFilter categories={categoriesRes.data} />}
       {brandsRes.data.length > 0 && <BrandFilter brands={brandsRes.data} />}
       {productPropertiesRes.data.colors.length > 0 && <ColorFilter colors={productPropertiesRes.data.colors} />}

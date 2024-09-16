@@ -11,7 +11,7 @@ export default function ProductsContainer() {
   return (
     <div className="flex items-center flex-col gap-3 w-full">
       <div className="flex items-center justify-between w-full">
-        {filterKeys.searchKey && <h1 className="text-2xl font-bold">{filterKeys.searchKey}...</h1>}
+        <h1 className="text-2xl font-bold capitalize">{filterKeys.searchKey ? `${filterKeys.searchKey}...` : "explore products"}</h1>
         <SortByFilter />
       </div>
       <Products />

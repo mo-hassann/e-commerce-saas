@@ -7,7 +7,7 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
 import { and, eq, sql, desc, inArray, asc } from "drizzle-orm";
-import { productPropertiesTable, productTable, productTagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
+import { brandTable, categoryTable, productPropertiesTable, productTable, productTagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
 import { productSearchFilters } from "@/validators/products";
 
 const app = new Hono()
@@ -162,9 +162,26 @@ const app = new Hono()
   .get("/:productId", zValidator("param", z.object({ productId: z.string().uuid() })), async (c) => {
     const { productId } = c.req.valid("param");
     try {
-      const [product] = await db.select().from(productTable).where(eq(productTable.id, productId));
+      const [product] = await db
+        .select({
+          id: productTable.id,
+          brand: brandTable.name,
+          category: categoryTable.name,
+          price: productTable.price,
+          oldPrice: productTable.oldPrice,
+          name: productTable.name,
+          reviewedNumber: productTable.reviewedNumber,
+          rating: productTable.rating,
+          description: productTable.description,
+        })
+        .from(productTable)
+        .leftJoin(categoryTable, eq(categoryTable.id, productTable.categoryId))
+        .leftJoin(brandTable, eq(brandTable.id, productTable.brandId))
+        .where(eq(productTable.id, productId));
 
-      return c.json({ data: product });
+      const properties = await db.select().from(productPropertiesTable).where(eq(productPropertiesTable.productId, productId));
+
+      return c.json({ data: { ...product, properties } });
     } catch (error: any) {
       console.log(error.message);
       return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);

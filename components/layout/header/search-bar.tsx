@@ -3,12 +3,21 @@ import { Input } from "@/components/ui/input";
 import useProductFilterKeys from "@/hooks/use-product-filter-keys";
 import useUpdateSearchParams from "@/hooks/use-update-search-params";
 import { Search } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 export default function SearchBar() {
   const { searchKey } = useProductFilterKeys();
   const { updateSearchParams } = useUpdateSearchParams();
   const [search, setSearch] = useState(searchKey);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (searchKey && pathname.startsWith("/search")) {
+      setSearch(searchKey);
+    }
+  }, [searchKey, pathname]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -16,10 +25,20 @@ export default function SearchBar() {
     }, 400);
 
     return () => clearTimeout(timeout);
-  }, [search]);
+  }, [search, updateSearchParams]);
   return (
     <div className="sm:flex hidden items-center py-1 px-2 rounded-md overflow-hidden border w-64 h-10 has-[:focus]:ring-2 has-[:focus]:border-transparent ring-primary/70">
-      <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="disabled:opacity-50 p-0 px-3 rounded-none border-none focus-visible:ring-0 focus-visible:ring-offset-0" />
+      <Input
+        placeholder="Search..."
+        value={search}
+        onChange={(e) => {
+          if (!!e.target.value && !pathname.startsWith("/search")) {
+            router.push(`/search?searchKey=${e.target.value}`);
+          }
+          setSearch(e.target.value);
+        }}
+        className="disabled:opacity-50 p-0 px-3 rounded-none border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+      />
       <Search size={18} />
     </div>
   );

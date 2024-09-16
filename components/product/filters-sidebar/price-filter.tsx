@@ -1,5 +1,5 @@
 "use client";
-// @ts-ignore
+
 import RangeSlider from "react-range-slider-input";
 import "react-range-slider-input/dist/style.css";
 import "@/styles/range-slider.css";
@@ -17,7 +17,7 @@ export default function ColorFilter() {
   const { updateSearchParams } = useUpdateSearchParams();
 
   const [minValue, setMinValue] = useState(minPrice ? +minPrice : 1);
-  const [maxValue, setMaxValue] = useState(maxPrice ? +maxPrice : 1000);
+  const [maxValue, setMaxValue] = useState(maxPrice ? +maxPrice : 10_000);
 
   const minRangeValue = 1;
   const maxRangeValue = 50_000;
