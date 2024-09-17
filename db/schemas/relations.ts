@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { userTable, storeTable, categoryTable, tagTable, brandTable, productTable, productTagTable, productPropertiesTable, promoCodeTable, userProductInteractionTable, productImageTable, userFavoritedProductsTable, userPurchaseTable } from "./";
+import { userTable, storeTable, categoryTable, tagTable, brandTable, productTable, productTagTable, productColorTable, productSizesTable, promoCodeTable, userProductInteractionTable, productImageTable, userFavoritedProductsTable, userPurchaseTable } from "./";
 
 // User relations
 export const userRelations = relations(userTable, ({ one, many }) => ({
@@ -55,7 +55,8 @@ export const productRelations = relations(productTable, ({ one, many }) => ({
     references: [brandTable.id],
   }), // A product belongs to one brand
   productTags: many(productTagTable), // A product can be linked to many product-tag relationships
-  properties: many(productPropertiesTable), // A product can have many properties (size, color, stock)
+  colors: many(productColorTable), // A product can have many  colors
+  sizes: many(productSizesTable), // A product can have many sizes
   images: many(productImageTable), // A product can have many product images
   promoCodes: many(promoCodeTable), // A product can have many promo codes
   interactions: many(userProductInteractionTable), // A product can have many user interactions (favorites, ratings)
@@ -75,12 +76,22 @@ export const productTagRelations = relations(productTagTable, ({ one }) => ({
   }), // A product-tag relationship belongs to one tag
 }));
 
-// Product Properties relations
-export const productPropertiesRelations = relations(productPropertiesTable, ({ one }) => ({
+// Product color relations
+export const productColorRelations = relations(productColorTable, ({ one, many }) => ({
   product: one(productTable, {
-    fields: [productPropertiesTable.productId],
+    fields: [productColorTable.productId],
     references: [productTable.id],
-  }), // Properties are linked to one product
+  }), // color is linked to one product
+  purchases: many(userPurchaseTable),
+}));
+
+// Product size relations
+export const productSizeRelations = relations(productSizesTable, ({ one, many }) => ({
+  product: one(productTable, {
+    fields: [productSizesTable.productId],
+    references: [productTable.id],
+  }), // size is linked to one product
+  purchases: many(userPurchaseTable),
 }));
 
 // Product images relations
@@ -117,6 +128,14 @@ export const userPurchasesRelations = relations(userPurchaseTable, ({ one }) => 
     fields: [userPurchaseTable.productId],
     references: [productTable.id],
   }), // A purchase is linked to one product
+  size: one(productSizesTable, {
+    fields: [userPurchaseTable.size],
+    references: [productSizesTable.size],
+  }), // A purchase is linked to one product size
+  color: one(productColorTable, {
+    fields: [userPurchaseTable.color],
+    references: [productColorTable.color],
+  }), // A purchase is linked to one product color
 }));
 
 // User-Product Interaction relations

@@ -1,10 +1,5 @@
-import { pgTable, uuid, text, varchar, date, timestamp, numeric, integer, boolean, pgEnum, unique } from "drizzle-orm/pg-core";
-
-// Roles enum for user
-export const roleEnum = pgEnum("role", ["USER", "ADMIN"]);
-
-// Enum for product size
-export const sizeEnum = pgEnum("size", ["XS", "S", "M", "L", "XL", "XXL"]);
+import { pgTable, uuid, text, varchar, date, timestamp, numeric, integer, boolean, pgEnum, unique, serial, primaryKey, foreignKey } from "drizzle-orm/pg-core";
+import { colorEnum, roleEnum, sizeEnum } from "./enums";
 
 // User table with roles
 export const userTable = pgTable("user", {
@@ -66,35 +61,62 @@ export const productTable = pgTable("product", {
     .references(() => storeTable.id, { onDelete: "cascade" })
     .notNull(), // References the store the product belongs to
   reviewedNumber: integer("reviewed_number").default(0), // Number of reviews
+  stock: integer("stock"), // Number of items with this property in stock
   purchases: integer("purchases").default(0), // Number of purchases
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 // Product-Tag relation table (Many-to-many relation between product and tags)
-export const productTagTable = pgTable("product_tag", {
-  id: uuid("id").defaultRandom().primaryKey().notNull(),
-  productId: uuid("product_id")
-    .references(() => productTable.id, { onDelete: "cascade" })
-    .notNull(),
-  tagId: uuid("tag_id")
-    .references(() => tagTable.id, { onDelete: "cascade" })
-    .notNull(),
-});
+export const productTagTable = pgTable(
+  "product_tag",
+  {
+    productId: uuid("product_id")
+      .references(() => productTable.id, { onDelete: "cascade" })
+      .notNull(),
+    tagId: uuid("tag_id")
+      .references(() => tagTable.id, { onDelete: "cascade" })
+      .notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.productId, table.tagId] }),
+  })
+);
 
-// Product properties table (size, color, stock)
-export const productPropertiesTable = pgTable("product_properties", {
-  id: uuid("id").defaultRandom().primaryKey().notNull(),
-  productId: uuid("product_id")
-    .references(() => productTable.id, { onDelete: "cascade" })
-    .notNull(), // References the product
-  size: sizeEnum("size").notNull(), // Size (enum: XS, S, M, L, XL, XXL)
-  color: varchar("color", { length: 100 }), // e.g., "red", "blue"
-  stock: integer("stock").default(0), // Number of items with this property in stock
-});
+// Product color table
+export const productColorTable = pgTable(
+  "product_color",
+  {
+    id: uuid("id").defaultRandom().primaryKey().notNull(),
+    productId: uuid("product_id")
+      .references(() => productTable.id, { onDelete: "cascade" })
+      .notNull(), // References the product
+    color: colorEnum("color").notNull(), // e.g., "red", "blue"
+  },
+  (table) => ({
+    // the product can not have the same color twice
+    unique: unique("unique_product_color").on(table.productId, table.color),
+  })
+);
+
+// Product size table
+export const productSizesTable = pgTable(
+  "product_size",
+  {
+    id: uuid("id").defaultRandom().primaryKey().notNull(),
+    productId: uuid("product_id")
+      .references(() => productTable.id, { onDelete: "cascade" })
+      .notNull(), // References the product
+    size: sizeEnum("size").notNull(), // e.g.,  "L", "XL"
+  },
+  (table) => ({
+    // the product can not have the same size twice
+    unique: unique("unique_product_size").on(table.productId, table.size),
+  })
+);
 
 // Product images table
-export const productImageTable = pgTable("product_properties", {
+export const productImageTable = pgTable("product_images", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   productId: uuid("product_id")
     .references(() => productTable.id, { onDelete: "no action" }) // because if the product deleted, the linked url of the image and the image in the cloud will not be deleted so we must keep it the db
@@ -125,7 +147,10 @@ export const userPurchaseTable = pgTable("user_purchase", {
   productId: uuid("product_id")
     .references(() => productTable.id, { onDelete: "cascade" })
     .notNull(),
+
   quantity: integer("quantity").notNull().default(1),
+  color: colorEnum("color"),
+  size: sizeEnum("size"),
 
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -145,13 +170,13 @@ export const userProductInteractionTable = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    // the user can make one interaction for the same product
+    // the user can make one interaction (review, rating, ..) for the same product
     unq: unique("unique_user_product_interaction").on(table.userId, table.productId),
   })
 );
 
 // Favorited Products By the User
-export const userFavoritedProductsTable = pgTable("user_favorited_products_table", {
+export const userFavoritedProductsTable = pgTable("user_favorite_product", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   userId: uuid("user_id").references(() => userTable.id, { onDelete: "cascade" }),
   productId: uuid("product_id")

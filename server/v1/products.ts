@@ -7,7 +7,7 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
 import { and, eq, sql, desc, inArray, asc } from "drizzle-orm";
-import { brandTable, categoryTable, productPropertiesTable, productTable, productTagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
+import { brandTable, categoryTable, productColorTable, productImageTable, productSizesTable, productTable, productTagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
 import { productSearchFilters } from "@/validators/products";
 
 const app = new Hono()
@@ -46,7 +46,8 @@ const app = new Hono()
         })
         .from(productTable)
         .leftJoin(productTagTable, eq(productTable.id, productTagTable.productId))
-        .leftJoin(productPropertiesTable, eq(productTable.id, productPropertiesTable.productId))
+        .leftJoin(productColorTable, eq(productTable.id, productColorTable.productId))
+        .leftJoin(productSizesTable, eq(productTable.id, productSizesTable.productId))
         .where(
           sql`${brandIds?.split("|")[0] ? sql`${inArray(productTable.brandId, brandIds.split("|"))}` : sql`1=1`}
             AND ${categoryIds?.split("|")[0] ? sql`${inArray(productTable.categoryId, categoryIds.split("|"))}` : sql`1=1`}
@@ -55,8 +56,8 @@ const app = new Hono()
             AND ${maxPrice ? sql`${productTable.price} <= ${maxPrice}` : sql`1=1`}
             AND ${minRating ? sql`${productTable.rating} >= ${minRating}` : sql`1=1`}
             AND ${maxRating ? sql`${productTable.rating} <= ${maxRating}` : sql`1=1`}
-            AND ${color ? sql`${productPropertiesTable.color} = ${color}` : sql`1=1`}
-            AND ${size ? sql`${productPropertiesTable.size} = ${size}` : sql`1=1`}
+            AND ${color ? sql`${productColorTable.color} = ${color}` : sql`1=1`}
+            AND ${size ? sql`${productSizesTable.size} = ${size}` : sql`1=1`}
             AND ${searchKey ? sql`${productTable.name} ILIKE ${`%${searchKey}%`} OR ${productTable.description} ILIKE ${`%${searchKey}%`}` : sql`1=1`}
             `
         )
@@ -179,9 +180,12 @@ const app = new Hono()
         .leftJoin(brandTable, eq(brandTable.id, productTable.brandId))
         .where(eq(productTable.id, productId));
 
-      const properties = await db.select().from(productPropertiesTable).where(eq(productPropertiesTable.productId, productId));
+      const productImages = await db.select().from(productImageTable).where(eq(productImageTable.productId, productId)).orderBy(productImageTable.order);
 
-      return c.json({ data: { ...product, properties } });
+      const colors = await db.select().from(productColorTable).where(eq(productColorTable.productId, productId));
+      const sizes = await db.select().from(productSizesTable).where(eq(productSizesTable.productId, productId));
+
+      return c.json({ data: { ...product, properties: { colors, sizes }, productImages } });
     } catch (error: any) {
       console.log(error.message);
       return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
