@@ -1,5 +1,5 @@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import useGetCartItems from "@/query-hooks/product/use-get-cart-items";
+import useGetCartItems from "@/query-hooks/product/cart/use-get-cart-items";
 import useCartSheet from "@/hooks/product/use-cart-sheet";
 import CartItem from "./cart-item";
 import { formatCurrency } from "@/lib/format-money";
@@ -38,14 +38,18 @@ const CartItemsContainer = () => {
         ))}
       </div>
       <div className="p-3 border-t w-full font-semibold space-y-3">
-        <p className="flex items-center justify-between">
-          <span>Sub-Total:</span>
-          <span>{formatCurrency(totalOldPrice)}</span>
-        </p>
-        <p className="flex items-center justify-between">
-          <span>VAT ({discount}%):</span>
-          <span>{formatCurrency(totalOldPrice - totalPrice)}</span>
-        </p>
+        {!!totalOldPrice && (
+          <>
+            <p className="flex items-center justify-between">
+              <span>Sub-Total:</span>
+              <span className="text-muted-foreground line-through">{formatCurrency(totalOldPrice)}</span>
+            </p>
+            <p className="flex items-center justify-between">
+              <span>VAT ({discount}%):</span>
+              <span className="text-destructive">{formatCurrency(totalOldPrice - totalPrice)}</span>
+            </p>
+          </>
+        )}
         <p className="flex items-center justify-between">
           <span>Total:</span>
           <span>{formatCurrency(totalPrice)}</span>

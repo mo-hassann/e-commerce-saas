@@ -16,7 +16,6 @@ export default function useAddToCart() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (item: cartItem) => {
-      debugger;
       const cart: cartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
 
       const existItemIndex = cart.findIndex((i) => i.id === item.id && i.color?.id === item.color?.id && i.size?.id === item.size?.id);

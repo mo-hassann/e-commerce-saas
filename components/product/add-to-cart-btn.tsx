@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
-import useAddToCard, { cartItem } from "@/query-hooks/product/use-add-to-cart";
+import useAddToCard, { cartItem } from "@/query-hooks/product/cart/use-add-to-cart";
 
 type props = {
   item: cartItem;

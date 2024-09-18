@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import FavoriteProductBtn from "./favorite-product-btn";
-import { cartItem } from "@/query-hooks/product/use-add-to-cart";
+import { cartItem } from "@/query-hooks/product/cart/use-add-to-cart";
 import AddToCartBtn from "./add-to-cart-btn";
 
 type properties = {

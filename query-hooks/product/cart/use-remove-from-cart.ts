@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { cartItem } from "./use-add-to-cart";
 
-type props = {
+export type cartBasic = {
   id: string;
   colorId?: string;
   sizeId?: string;
@@ -11,7 +11,7 @@ type props = {
 export default function useRemoveFromCart() {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: ({ id, colorId, sizeId }: props) => {
+    mutationFn: ({ id, colorId, sizeId }: cartBasic) => {
       const cart: cartItem[] = JSON.parse(localStorage.getItem("cart") || "[]");
 
       const itemIndex = cart.findIndex((i) => i.id === id && i.color?.id === colorId && i.size?.id === sizeId);

@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import useCartSheet from "@/hooks/product/use-cart-sheet";
-import useGetCartItems from "@/query-hooks/product/use-get-cart-items";
+import useGetCartItems from "@/query-hooks/product/cart/use-get-cart-items";
 import { FaCartShopping } from "react-icons/fa6";
 
 export default function CartBtn() {
