@@ -73,7 +73,24 @@ const app = new Hono()
     const userId = session.user?.id!;
 
     try {
-      const products = await db.select().from(userFavoritedProductsTable).where(eq(userFavoritedProductsTable.userId, userId)).leftJoin(productTable, eq(userFavoritedProductsTable.productId, productTable.id)).orderBy(desc(userFavoritedProductsTable.createdAt));
+      const products = await db
+        .select({
+          id: productTable.id,
+          name: productTable.name,
+          brandId: productTable.brandId,
+          categoryId: productTable.categoryId,
+          oldPrice: productTable.oldPrice,
+          price: productTable.price,
+          reviewedNumber: productTable.reviewedNumber,
+          rating: productTable.rating,
+          purchases: productTable.purchases,
+          description: productTable.description,
+        })
+        .from(productTable)
+        .leftJoin(userFavoritedProductsTable, eq(userFavoritedProductsTable.productId, productTable.id))
+        .where(eq(userFavoritedProductsTable.userId, userId))
+        .orderBy(desc(userFavoritedProductsTable.createdAt))
+        .groupBy(productTable.id, userFavoritedProductsTable.createdAt);
 
       return c.json({ data: products });
     } catch (error: any) {

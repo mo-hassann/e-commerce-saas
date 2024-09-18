@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 import { Rating } from "react-simple-star-rating";
 import Link from "next/link";
+import FavoriteProductBtn from "./favorite-product-btn";
 
 type props = {
   product: getProductsResType;
@@ -15,7 +16,7 @@ type props = {
 export default function ProductCard({ orientation = "VERTICAL", product }: props) {
   const discount = product.oldPrice ? Math.round(Math.abs(1 - +product.price / +product.oldPrice) * 100) : undefined;
   return (
-    <Link href={`products/${product.id}`} className={cn("w-[270px] h-auto flex flex-col p-3.5 rounded-lg border hover:shadow-md cursor-pointer", orientation === "HORIZONTAL" && "gap-4 flex-row w-full")}>
+    <div className={cn("w-[270px] h-auto flex flex-col p-3.5 rounded-lg border hover:shadow-md cursor-pointer", orientation === "HORIZONTAL" && "gap-4 flex-row w-full")}>
       <div className="rounded-lg overflow-hidden group relative cursor-pointer shadow-inner flex-shrink-0">
         <div className={cn("rounded-lg w-full h-[200px] overflow-hidden", orientation === "HORIZONTAL" && "w-[200px]")}>
           <Image className="size-full object-cover object-center group-hover:scale-125 group-hover:translate-y-7 transition duration-1000" width={100} height={100} src={"/product.jpg"} alt="product" />
@@ -23,18 +24,18 @@ export default function ProductCard({ orientation = "VERTICAL", product }: props
         {discount && <div className="absolute top-3 left-3 bg-secondary rounded-sm flex items-center justify-center h-5 w-auto px-3 capitalize text-sm text-white">{discount}% off</div>}
         <div className="absolute bottom-0 w-full h-1/2 bg-[linear-gradient(0deg,#000,transparent)] opacity-0 group-hover:opacity-30" />
         <div className="flex items-center justify-center gap-3 absolute bottom-0 w-full p-5 z-10 opacity-0 group-hover:opacity-100">
-          <Button className="rounded-full text-muted-foreground bg-white hover:bg-primary hover:text-white shadow-sm translate-y-9 group-hover:translate-y-0 transition-all" size="icon">
-            <Heart size={18} />
-          </Button>
-          <Button className="rounded-full text-muted-foreground bg-white hover:bg-primary hover:text-white shadow-sm translate-y-9 group-hover:translate-y-0 transition-all" size="icon">
+          <FavoriteProductBtn productId={product.id} className="bg-white text-muted-foreground  border-transparent backdrop-blur-md rounded-full  shadow-sm translate-y-9 group-hover:translate-y-0 transition-all" size="icon" />
+          <Button className="rounded-full bg-white text-muted-foreground backdrop-blur-md hover:bg-primary hover:text-white shadow-sm translate-y-9 group-hover:translate-y-0 transition-all" size="icon">
             <ShoppingBasket size={18} />
           </Button>
-          <Button className="rounded-full text-muted-foreground bg-white hover:bg-primary hover:text-white shadow-sm translate-y-9 group-hover:translate-y-0 transition-all" size="icon">
-            <ExternalLink size={18} />
-          </Button>
+          <Link href={`/products/${product.id}`} target="_blank">
+            <Button className="rounded-full bg-white text-muted-foreground  backdrop-blur-md hover:bg-primary hover:text-white shadow-sm translate-y-9 group-hover:translate-y-0 transition-all" size="icon">
+              <ExternalLink size={18} />
+            </Button>
+          </Link>
         </div>
       </div>
-      <div className="py-3 px-2 flex flex-col gap-1.5 w-full">
+      <Link href={`/products/${product.id}`} className="py-3 px-2 flex flex-col gap-1.5 w-full">
         <div className="flex items-center justify-between">
           <span className="text-muted-foreground capitalize">pottle</span>
           {product.rating && (
@@ -56,7 +57,7 @@ export default function ProductCard({ orientation = "VERTICAL", product }: props
             view product
           </Button>
         )}
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

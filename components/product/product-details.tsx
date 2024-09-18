@@ -2,8 +2,8 @@ import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/format-money";
 import client from "@/server/client";
 import { InferResponseType } from "hono";
-import ProductPropertyForm from "./product-property-form";
 import ProductImagesPreviewer from "./product-images-previewer";
+import AddToCardProductForm from "./add-to-card-product-form";
 
 type props = {
   product: Extract<InferResponseType<(typeof client.api.v1.products)[":productId"]["$get"]>, { data: any }>["data"];
@@ -42,7 +42,7 @@ export default function ProductDetails({ product }: props) {
         <Separator className="my-4" />
         <p>{product.description}</p>
 
-        <ProductPropertyForm properties={product.properties} />
+        <AddToCardProductForm properties={product.properties} productId={product.id} />
       </div>
     </div>
   );
