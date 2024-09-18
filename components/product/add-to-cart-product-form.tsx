@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import AddToCardBtn from "./add-to-card-btn";
 import FavoriteProductBtn from "./favorite-product-btn";
-import { FaHeart } from "react-icons/fa6";
+import { cartItem } from "@/query-hooks/product/use-add-to-cart";
+import AddToCartBtn from "./add-to-cart-btn";
 
 type properties = {
   properties: {
@@ -18,10 +18,10 @@ type properties = {
       size: string;
     }[];
   };
-  productId: string;
+  product: Omit<cartItem, "size" | "quantity" | "color">;
 };
 
-export default function AddToCardProductForm({ properties: { colors, sizes }, productId }: properties) {
+export default function AddToCartProductForm({ properties: { colors, sizes }, product }: properties) {
   const [activeColorId, setActiveColorId] = useState<string>(colors[0]?.id);
   const [activeSizeId, setActiveSizeId] = useState<string>(sizes[0]?.id);
   const [quantity, setQuantity] = useState(1);
@@ -54,14 +54,9 @@ export default function AddToCardProductForm({ properties: { colors, sizes }, pr
       {/* add to card component */}
       <div className="flex items-center gap-3 py-4">
         <Input className="w-20 text-lg" type="number" value={quantity} onChange={(e) => setQuantity(+e.target.value >= 0 ? +e.target.value : 0)} />
-        <AddToCardBtn />
-        <FavoriteProductBtn productId={productId} />
+        <AddToCartBtn item={{ id: product.id, name: product.name, price: product.price, quantity, color: colors.find((color) => color.id === activeColorId), size: sizes.find((size) => size.id === activeSizeId), image: product.image, oldPrice: product.oldPrice }} />
+        <FavoriteProductBtn productId={product.id} />
       </div>
     </div>
   );
 }
-
-/* 
-
-      
-*/

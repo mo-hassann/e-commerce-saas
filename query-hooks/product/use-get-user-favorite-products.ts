@@ -2,8 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import client from "@/server/client";
 import { handleErrors } from "@/lib/server/errors";
+import { useSession } from "@/hooks/use-session";
 
 export default function useGetUserFavoriteProducts() {
+  const { session } = useSession();
   const query = useQuery({
     queryKey: ["user_favorite_products"],
     queryFn: async () => {
@@ -16,6 +18,7 @@ export default function useGetUserFavoriteProducts() {
 
       return data;
     },
+    retry: !!session,
   });
 
   return query;

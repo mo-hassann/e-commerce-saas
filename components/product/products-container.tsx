@@ -1,7 +1,7 @@
 "use client";
 
 import ProductCard from "@/components/product/product-card";
-import useProductFilterKeys from "@/hooks/use-product-filter-keys";
+import useProductFilterKeys from "@/hooks/product/use-product-filter-keys";
 import useGetProducts from "@/query-hooks/product/use-get-products";
 import SortByFilter from "./sort-by-filter";
 

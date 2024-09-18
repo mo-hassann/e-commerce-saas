@@ -3,7 +3,7 @@ import { formatCurrency } from "@/lib/format-money";
 import client from "@/server/client";
 import { InferResponseType } from "hono";
 import ProductImagesPreviewer from "./product-images-previewer";
-import AddToCardProductForm from "./add-to-card-product-form";
+import AddToCartProductForm from "./add-to-cart-product-form";
 
 type props = {
   product: Extract<InferResponseType<(typeof client.api.v1.products)[":productId"]["$get"]>, { data: any }>["data"];
@@ -42,7 +42,7 @@ export default function ProductDetails({ product }: props) {
         <Separator className="my-4" />
         <p>{product.description}</p>
 
-        <AddToCardProductForm properties={product.properties} productId={product.id} />
+        <AddToCartProductForm properties={product.properties} product={{ id: product.id, image: product.productImages[0]?.url, name: product.name, oldPrice: product.oldPrice || undefined, price: product.price }} />
       </div>
     </div>
   );

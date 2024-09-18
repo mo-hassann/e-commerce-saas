@@ -2,9 +2,10 @@ import React from "react";
 import Logo from "./logo";
 import SearchBar from "./search-bar";
 import UserBtn from "./user-btn";
-import CardBtn from "./card-btn";
+
 import WhishListBtn from "./wish-list-btn";
 import { Separator } from "@/components/ui/separator";
+import CartBtn from "./cart-btn";
 
 export default function Header() {
   return (
@@ -16,7 +17,7 @@ export default function Header() {
         </div>
         <div className="flex items-center gap-2.5">
           <div className="flex items-center gap-4 mx-3">
-            <CardBtn />
+            <CartBtn />
             <WhishListBtn />
           </div>
           <Separator className="h-10" orientation="vertical" />

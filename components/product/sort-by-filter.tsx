@@ -1,5 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import useProductFilterKeys from "@/hooks/use-product-filter-keys";
+import useProductFilterKeys from "@/hooks/product/use-product-filter-keys";
 import useUpdateSearchParams from "@/hooks/use-update-search-params";
 
 export default function SortByFilter() {

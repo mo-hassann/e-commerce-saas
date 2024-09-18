@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import useProductFilterKeys from "@/hooks/use-product-filter-keys";
+import useProductFilterKeys from "@/hooks/product/use-product-filter-keys";
 import useUpdateSearchParams from "@/hooks/use-update-search-params";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";

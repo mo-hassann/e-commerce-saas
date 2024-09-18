@@ -1,7 +1,7 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import useProductFilterKeys from "@/hooks/use-product-filter-keys";
+import useProductFilterKeys from "@/hooks/product/use-product-filter-keys";
 import useUpdateSearchParams from "@/hooks/use-update-search-params";
 import { useEffect, useState } from "react";
 

@@ -1,7 +1,9 @@
+"use client";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 export default function Navbar() {
-  const activeId = 1;
+  const [activeId, setActiveId] = useState(1);
   const items = [
     { id: 1, name: "shirts" },
     { id: 2, name: "jeans" },
@@ -9,11 +11,11 @@ export default function Navbar() {
     { id: 4, name: "shirts" },
   ];
   return (
-    <nav className="w-full bg-muted/70">
-      <ul className="container flex items-center justify-center gap-10 py-3 capitalize font-semibold text-muted-foreground">
+    <nav className="w-full bg-muted/40">
+      <ul className="container flex items-center justify-center gap-10 py-3 uppercase font-semibold text-foreground">
         {items.map((item) => (
-          <li key={item.id} className={cn("flex items-center gap-1 cursor-pointer", activeId === item.id && "text-primary")}>
-            <span className={cn("block size-1.5 border border-muted-foreground/40 rounded-full", activeId === item.id && "border-primary")} />
+          <li onClick={() => setActiveId(item.id)} key={item.id} className={cn("flex items-center gap-1 cursor-pointer hover:text-primary", activeId === item.id && "text-primary")}>
+            <span className={cn("block size-1.5 border border-muted-foreground/40 rounded-full", activeId === item.id && "border-primary font-extrabold")} />
             {item.name}
           </li>
         ))}
