@@ -7,6 +7,8 @@ type props = { params: { id: string } };
 export default async function ProductsPage({ params: { id } }: props) {
   const productRes = await requestData(client.api.v1.products[":productId"], "$get", { param: { productId: id } });
 
+  console.log(productRes);
+
   if (productRes.isError) return <div>something went wrong while fetching the data.</div>;
 
   return (

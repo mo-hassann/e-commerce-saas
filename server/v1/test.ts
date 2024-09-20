@@ -2,15 +2,16 @@ import { getAuthUser, verifyAuth } from "@hono/auth-js";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
+import { curStore } from "@/lib/server/get-cur-store";
 
 const app = new Hono()
   .get("/auth-needed", verifyAuth(), async (c) => {
     const auth = c.get("authUser");
     return c.json({ auth, data: "some data that required the user to be authorized" });
   })
-  .get("/", zValidator("query", z.object({ test: z.string() })), (c) => {
-    const data = c.req.valid("query");
-    return c.json({ message: "this is public route!", data });
+  .get("/", zValidator("query", z.object({ name: z.string().optional() })), (c) => {
+    const query = c.req.valid("query");
+    return c.json({ message: "this is public route!", query });
   })
   .post("/", zValidator("json", z.object({ arg1: z.boolean() })), (c) => {
     try {

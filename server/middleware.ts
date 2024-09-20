@@ -1,7 +1,12 @@
 import { Hono } from "hono";
-import { DEFAULT_SIGN_IN_REDIRECT, DEFAULT_SIGN_OUT_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes } from "@/routes";
+import { DEFAULT_SIGN_IN_REDIRECT, DEFAULT_SIGN_OUT_REDIRECT, LANDING_PAGE_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes } from "@/routes";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import db from "@/db";
+import { storeTable } from "@/db/schemas";
+import { eq } from "drizzle-orm";
+
+import { getCookie, getSignedCookie, setCookie, setSignedCookie, deleteCookie } from "hono/cookie";
 
 const app = new Hono();
 
@@ -28,27 +33,33 @@ app.all("*", async (c) => {
     return Response.redirect(new URL(DEFAULT_SIGN_OUT_REDIRECT, c.req.url));
   }
 
-  return NextResponse.next();
-});
-
-export default app;
-
-/* 
-  // check if the store exist or not
+  // Check for subdomain and store existence
   const host = c.req.header("host");
 
   if (host) {
     const [subdomain] = host.split(".");
 
-    // if the user is not in the main route (no subdomain case)
+    // If the user is not in the main route (no subdomain case)
     if (subdomain !== new URL(process.env.NEXT_PUBLIC_APP_URL!).host) {
-      const [store] = await db
-        .select()
-        .from(storeTable)
-        .where((table) => eq(table.storeName, subdomain));
+      const [store] = await db.select({ id: storeTable.id }).from(storeTable).where(eq(storeTable.storeName, subdomain));
 
-      if (!store) return NextResponse.error();
+      if (store?.id) {
+        const response = NextResponse.next();
+        response.cookies.set("subdomain", subdomain, {
+          httpOnly: false,
+          sameSite: "strict",
+        });
+        return response;
+      } else {
+        // Redirect to error page if store does not exist
+        return Response.error();
+      }
     } else if (!pathname.startsWith(LANDING_PAGE_REDIRECT)) {
       return Response.redirect(new URL(LANDING_PAGE_REDIRECT, c.req.url));
     }
-*/
+  }
+
+  return NextResponse.next();
+});
+
+export default app;
