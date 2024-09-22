@@ -1,26 +1,31 @@
-import client from "@/server/client";
+"use client";
 import CategoryFilter from "./category-filter";
 import ColorFilter from "./color-filter";
 import PriceFilter from "./price-filter";
 import TagFilter from "./tag-filter";
-import { requestData } from "@/lib/server/request-data";
 import BrandFilter from "./brand-filter";
+import useGetCategories from "@/query-hooks/categories/use-get-categories";
+import useGetBrands from "@/query-hooks/brands/use-get-brands";
+import useGetProductProperties from "@/query-hooks/product/use-get-product-properties";
+import useGetTags from "@/query-hooks/tags/use-get-tags";
+import Spinner from "@/components/global/spinner";
 
-export default async function ProductFiltersSidebar() {
-  const categoriesRes = await requestData(client.api.v1.category, "$get");
-  const brandsRes = await requestData(client.api.v1.brand, "$get");
-  const productPropertiesRes = await requestData(client.api.v1["product-properties"], "$get");
-  const tagsRes = await requestData(client.api.v1.tag, "$get");
+export default function ProductFiltersSidebar() {
+  const categoriesQuery = useGetCategories();
+  const brandsQuery = useGetBrands();
+  const productPropertiesQuery = useGetProductProperties();
+  const tagsQuery = useGetTags();
 
-  if (categoriesRes.isError || brandsRes.isError || productPropertiesRes.isError || tagsRes.isError) return <div>something went wrong while fetching the data.</div>;
+  if (categoriesQuery.isLoading || categoriesQuery.isPending || brandsQuery.isLoading || brandsQuery.isPending || productPropertiesQuery.isPending || productPropertiesQuery.isLoading || tagsQuery.isLoading || tagsQuery.isPending) return <Spinner />;
+  if (categoriesQuery.isError || brandsQuery.isError || productPropertiesQuery.isError || tagsQuery.isError) return <div>something went wrong while fetching the data.</div>;
 
   return (
     <div className="sticky top-4 bg-muted border rounded-md flex-shrink-0 w-[260px] h-fit">
-      {categoriesRes.data.length > 0 && <CategoryFilter categories={categoriesRes.data} />}
-      {brandsRes.data.length > 0 && <BrandFilter brands={brandsRes.data} />}
-      {productPropertiesRes.data.colors.length > 0 && <ColorFilter colors={productPropertiesRes.data.colors} />}
+      {categoriesQuery.data.length > 0 && <CategoryFilter categories={categoriesQuery.data} />}
+      {brandsQuery.data.length > 0 && <BrandFilter brands={brandsQuery.data} />}
+      {productPropertiesQuery.data.colors.length > 0 && <ColorFilter colors={productPropertiesQuery.data.colors} />}
       <PriceFilter />
-      {tagsRes.data.length > 0 && <TagFilter tags={tagsRes.data} />}
+      {tagsQuery.data?.length > 0 && <TagFilter tags={tagsQuery.data} />}
     </div>
   );
 }

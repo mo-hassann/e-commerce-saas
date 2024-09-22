@@ -4,14 +4,14 @@ import { Hono } from "hono";
 
 import { eq } from "drizzle-orm";
 import { productColorTable, productSizesTable, productTable } from "@/db/schemas";
+import { curStore } from "@/lib/server/get-cur-store";
 
-const app = new Hono().get("/", async (c) => {
-  // TODO: get the store
-  const storeId = "a04df90d-7155-4cc3-899f-0c6e88b4ca5a";
+const app = new Hono().get("/", curStore(), async (c) => {
+  const store = c.get("store");
   try {
-    const colors = await db.select({ id: productColorTable.id, color: productColorTable.color }).from(productColorTable).leftJoin(productTable, eq(productColorTable.productId, productTable.id)).where(eq(productTable.storeId, storeId)).groupBy(productColorTable.id);
+    const colors = await db.select({ id: productColorTable.id, color: productColorTable.color }).from(productColorTable).leftJoin(productTable, eq(productColorTable.productId, productTable.id)).where(eq(productTable.storeId, store.id)).groupBy(productColorTable.id);
 
-    const sizes = await db.select({ id: productSizesTable.id, size: productSizesTable.size }).from(productSizesTable).leftJoin(productTable, eq(productSizesTable.productId, productTable.id)).where(eq(productTable.storeId, storeId)).groupBy(productSizesTable.id);
+    const sizes = await db.select({ id: productSizesTable.id, size: productSizesTable.size }).from(productSizesTable).leftJoin(productTable, eq(productSizesTable.productId, productTable.id)).where(eq(productTable.storeId, store.id)).groupBy(productSizesTable.id);
 
     return c.json({ data: { colors: colors, sizes } });
   } catch (error: any) {

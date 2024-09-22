@@ -22,7 +22,7 @@ const app = new Hono()
       const [existingUser] = await db.select({ id: userTable.id }).from(userTable).where(eq(userTable.email, values.email));
 
       if (existingUser) {
-        return c.json({ message: "user with this email is already exist" }, 400);
+        return c.json({ errorMessage: "user with this email is already exist" }, 400);
       }
 
       // create random unique user name because it require in the db and user can change this userName in their profile after registration and login successfully
@@ -40,7 +40,7 @@ const app = new Hono()
       return c.json({ message: "user added successfully" });
     } catch (error: any) {
       console.log(error);
-      return c.json({ message: "field to register the user", cause: error?.message }, 400);
+      return c.json({ errorMessage: "field to register the user", cause: error?.message }, 400);
     }
   })
   .post("/sign-in", zValidator("json", signInFormSchema), async (c) => {
@@ -58,15 +58,15 @@ const app = new Hono()
       if (error instanceof AuthError) {
         switch (error.type) {
           case "CredentialsSignin":
-            return c.json({ message: "email or password is not correct", cause: error?.message }, 400);
+            return c.json({ errorMessage: "email or password is not correct", cause: error?.message }, 400);
           case "CallbackRouteError":
-            return c.json({ message: "email or password is not correct", cause: error?.message }, 400);
+            return c.json({ errorMessage: "email or password is not correct", cause: error?.message }, 400);
 
           default:
-            return c.json({ message: "something went wrong.", cause: error?.message }, 400);
+            return c.json({ errorMessage: "something went wrong.", cause: error?.message }, 400);
         }
       }
-      return c.json({ message: "unknown error", cause: error?.message }, 400);
+      return c.json({ errorMessage: "unknown error", cause: error?.message }, 400);
     }
   })
   .post("/sign-out", async (c) => {
@@ -78,7 +78,7 @@ const app = new Hono()
       if (isRedirectError(error)) {
         throw error;
       }
-      return c.json({ message: "something went wrong" }, 400);
+      return c.json({ errorMessage: "something went wrong" }, 400);
     }
   });
 

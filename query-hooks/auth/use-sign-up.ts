@@ -24,8 +24,8 @@ export default function useSignUp() {
 
       return await res.json();
     },
-    onSuccess: ({ message }) => {
-      toast.success(message);
+    onSuccess: (res: any) => {
+      toast.success(res.message);
       router.push("/sign-in");
     },
     onError: (error) => {

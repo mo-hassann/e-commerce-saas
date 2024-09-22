@@ -25,14 +25,12 @@ export default function useSignOut() {
 
       return await res.json();
     },
-    onSuccess: ({ message }) => {
-      toast.success(message);
+    onSuccess: (res: any) => {
+      toast.success(res.message);
       router.push(DEFAULT_SIGN_OUT_REDIRECT);
       router.refresh();
     },
     onError: (error) => {
-      console.log(error);
-
       toast.error(error.message);
     },
   });

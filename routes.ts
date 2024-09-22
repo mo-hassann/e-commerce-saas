@@ -7,10 +7,15 @@ export const publicRoutes = ["/auth/new-verification", "/"];
 
 /**
  * An array of routes that are used for authentication
- * These routes will redirect logged in users to /settings
  * @type {string[]}
  */
 export const authRoutes = ["/sign-in", "/sign-up", "/auth/error", "/auth/reset", "/auth/new-password"];
+
+/**
+ * An array of routes that are used for admins only
+ * @type {string[]}
+ */
+export const adminRoutes = ["/dashboard"];
 
 /**
  * The prefix for API authentication routes

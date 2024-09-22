@@ -53,7 +53,7 @@ export default function AddToCartProductForm({ properties: { colors, sizes }, pr
       )}
       {/* add to card component */}
       <div className="flex items-center gap-3 py-4">
-        <Input className="w-20 text-lg" type="number" value={quantity} onChange={(e) => setQuantity(+e.target.value >= 0 ? +e.target.value : 0)} />
+        <Input className="w-20 text-lg" type="number" value={quantity} onChange={(e) => setQuantity(+e.target.value >= 1 ? +e.target.value : 1)} />
         <AddToCartBtn item={{ id: product.id, name: product.name, price: product.price, quantity, color: colors.find((color) => color.id === activeColorId), size: sizes.find((size) => size.id === activeSizeId), image: product.image, oldPrice: product.oldPrice }} />
         <FavoriteProductBtn productId={product.id} />
       </div>

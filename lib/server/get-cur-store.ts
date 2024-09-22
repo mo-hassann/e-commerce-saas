@@ -3,7 +3,6 @@ import { storeTable } from "@/db/schemas";
 import { eq } from "drizzle-orm";
 import { MiddlewareHandler } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { headers } from "next/headers";
 
 declare module "hono" {
   interface ContextVariableMap {
@@ -14,10 +13,7 @@ declare module "hono" {
 export function curStore(): MiddlewareHandler {
   return async (c, next) => {
     try {
-      const headersList = headers();
-      const host = headersList.get("host"); // to get domain
-      console.log(host, "-------------------------------- host");
-      /*       // const host = c.req.header("host");
+      const host = c.req.header("host");
       if (!host) {
         const res = new Response("no host", {
           status: 400,
@@ -41,8 +37,7 @@ export function curStore(): MiddlewareHandler {
         throw new HTTPException(404, { res });
       }
 
-      c.set("store", store); */
-
+      c.set("store", store);
       await next();
     } catch (error: any) {
       console.log(error.message);

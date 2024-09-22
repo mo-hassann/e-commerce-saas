@@ -2,6 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingBag, Zap, Globe } from "lucide-react";
+import Link from "next/link";
 
 export default function LandingPage() {
   return (
@@ -10,10 +11,14 @@ export default function LandingPage() {
         <nav className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">StoreCreator</h1>
           <div>
-            <Button variant="ghost" className="mr-2">
-              Login
-            </Button>
-            <Button>Sign Up</Button>
+            <Link href="/sign-in">
+              <Button variant="ghost" className="mr-2">
+                Login
+              </Button>
+            </Link>
+            <Link href="/sign-up">
+              <Button>Sign Up</Button>
+            </Link>
           </div>
         </nav>
       </header>
@@ -22,9 +27,11 @@ export default function LandingPage() {
         <section className="text-center py-20">
           <h2 className="text-4xl font-bold mb-4">Create Your Online Store in Minutes</h2>
           <p className="text-xl text-gray-600 mb-8">Powerful, easy-to-use tools to build and grow your e-commerce business</p>
-          <Button size="lg" className="text-lg">
-            Get Started for Free
-          </Button>
+          <Link href="/sign-up">
+            <Button size="lg" className="text-lg">
+              Get Started for Free
+            </Button>
+          </Link>
         </section>
 
         <section className="py-16">
@@ -38,9 +45,11 @@ export default function LandingPage() {
 
         <section className="py-16 text-center">
           <h3 className="text-3xl font-semibold mb-8">Ready to Start Selling?</h3>
-          <Button size="lg" className="text-lg">
-            Create Your Store Now
-          </Button>
+          <Link href="/sign-up">
+            <Button size="lg" className="text-lg">
+              Create Your Store Now
+            </Button>
+          </Link>
         </section>
       </main>
 

@@ -62,6 +62,7 @@ export async function requestData<T extends HonoClientRoute, M extends Available
     // Return success response with type assertion
     return json as Exclude<InferResponseType<NonNullable<T[M]>>, { errorMessage: string }>;
   } catch (error: any) {
+    console.log(`server error: ${error.message}`, error);
     return {
       isError: true,
       errorMessage: `Request failed: ${error.message}`,

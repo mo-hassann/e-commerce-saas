@@ -65,7 +65,7 @@ const app = new Hono()
         .groupBy(productTable.id);
       return c.json({ data: products });
     } catch (error: any) {
-      return c.json({ message: error.message, cause: error.cause, error }, 400);
+      return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
     }
   })
   .get("/favorite", verifyAuth(), async (c) => {
@@ -118,7 +118,7 @@ const app = new Hono()
       return c.json({ message: "product favorite successfully" });
     } catch (error: any) {
       console.log(error.message);
-      return c.json({ message: error.message, cause: error.cause, error });
+      return c.json({ errorMessage: error.message, cause: error.cause, error });
     }
   })
   .get("/interactions", zValidator("query", z.object({ productId: z.string().uuid() })), async (c) => {
@@ -151,7 +151,7 @@ const app = new Hono()
       return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
     }
   })
-  .post("/interactions", verifyAuth(), zValidator("json", z.object({ productId: z.string().uuid(), rating: z.number(), review: z.string().optional() })), async (c) => {
+  .post("/user-interactions", verifyAuth(), zValidator("json", z.object({ productId: z.string().uuid(), rating: z.number(), review: z.string().optional() })), async (c) => {
     const { session } = c.get("authUser");
     const userId = session.user?.id!;
 
@@ -164,7 +164,7 @@ const app = new Hono()
         .from(userPurchaseTable)
         .where(and(eq(userPurchaseTable.userId, userId), eq(userPurchaseTable.productId, productId)));
 
-      if (!productPurchased) return c.json({ message: "you must purchase the product to be able to review it" }, 400);
+      if (!productPurchased) return c.json({ errorMessage: "you must purchase the product to be able to review it" }, 400);
 
       await db
         .insert(userProductInteractionTable)
@@ -174,7 +174,7 @@ const app = new Hono()
       return c.json({ message: "user interaction added successfully" });
     } catch (error: any) {
       console.log(error.message);
-      return c.json({ message: error.message, cause: error.cause, error });
+      return c.json({ errorMessage: error.message, cause: error.cause, error });
     }
   })
   .get("/:productId", zValidator("param", z.object({ productId: z.string().uuid() })), async (c) => {

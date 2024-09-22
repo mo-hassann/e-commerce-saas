@@ -4,12 +4,12 @@ import { Hono } from "hono";
 
 import { eq } from "drizzle-orm";
 import { brandTable, productTable } from "@/db/schemas";
+import { curStore } from "@/lib/server/get-cur-store";
 
-const app = new Hono().get("/", async (c) => {
-  // TODO: get the store
-  const storeId = "a04df90d-7155-4cc3-899f-0c6e88b4ca5a";
+const app = new Hono().get("/", curStore(), async (c) => {
+  const store = c.get("store");
   try {
-    const brands = await db.select({ id: brandTable.id, name: brandTable.name }).from(brandTable).leftJoin(productTable, eq(productTable.brandId, brandTable.id)).where(eq(productTable.storeId, storeId)).groupBy(brandTable.id);
+    const brands = await db.select({ id: brandTable.id, name: brandTable.name }).from(brandTable).leftJoin(productTable, eq(productTable.brandId, brandTable.id)).where(eq(productTable.storeId, store.id)).groupBy(brandTable.id);
 
     return c.json({ data: brands });
   } catch (error: any) {

@@ -1,18 +1,26 @@
+"use client";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/format-money";
-import client from "@/server/client";
-import { InferResponseType } from "hono";
 import ProductImagesPreviewer from "./product-images-previewer";
 import AddToCartProductForm from "./add-to-cart-product-form";
-import { Rating } from "react-simple-star-rating";
 import ProductRating from "./product-rating";
+import useGetProduct from "@/query-hooks/product/use-get-product";
+import Spinner from "../global/spinner";
 
 type props = {
-  product: Extract<InferResponseType<(typeof client.api.v1.products)[":productId"]["$get"]>, { data: any }>["data"];
+  productId: string;
 };
 
-export default function ProductDetails({ product }: props) {
+export default function ProductDetails({ productId }: props) {
+  const productQuery = useGetProduct({ productId });
+
+  if (productQuery.isPending || productQuery.isLoading) return <Spinner />;
+  if (productQuery.isError) return <div>something went wrong while fetching the data.</div>;
+
+  const product = productQuery.data;
+
   const discount = product.oldPrice ? Math.round(Math.abs(1 - +product.price / +product.oldPrice) * 100) : undefined;
+
   return (
     <div className="flex gap-6">
       <ProductImagesPreviewer images={product.productImages.length > 0 ? product.productImages : [{ id: "1", url: "/product.jpg" }]} />

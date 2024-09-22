@@ -10,10 +10,8 @@ export default function DashBoardLayout({ children }: props) {
   return (
     <div className="flex h-full bg-muted">
       <Sidebar />
-      <div className="size-full">
-        <Header />
-        {children}
-      </div>
+
+      {children}
     </div>
   );
 }

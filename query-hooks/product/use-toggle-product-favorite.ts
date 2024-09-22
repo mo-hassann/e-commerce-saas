@@ -36,11 +36,11 @@ export default function useToggleProductFavorite() {
       return { prevQuery };
     },
     onSuccess: (res: any) => {
-      toast.success("success");
+      toast.success(res.message);
     },
     onError: (error, newQuery, context: any) => {
       queryClient.setQueryData(["favorite_chapters_ids"], context?.prevQuery);
-      toast.error("error");
+      toast.error(error.message);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["user_favorite_products"] });

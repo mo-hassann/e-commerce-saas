@@ -4,7 +4,7 @@ import client from "@/server/client";
 import { InferRequestType, InferResponseType } from "hono";
 import { handleErrors } from "@/lib/server/errors";
 
-const $post = client.api.v1.products.interactions.$post;
+const $post = client.api.v1.products["user-interactions"].$post;
 
 type resT = InferResponseType<typeof $post>;
 type reqT = InferRequestType<typeof $post>["json"];

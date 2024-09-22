@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { DEFAULT_SIGN_IN_REDIRECT, DEFAULT_SIGN_OUT_REDIRECT, LANDING_PAGE_REDIRECT, apiAuthPrefix, authRoutes, publicRoutes } from "@/routes";
+import { DEFAULT_SIGN_IN_REDIRECT, DEFAULT_SIGN_OUT_REDIRECT, LANDING_PAGE_REDIRECT, adminRoutes, apiAuthPrefix, authRoutes, publicRoutes } from "@/routes";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import db from "@/db";
@@ -19,6 +19,7 @@ app.all("*", async (c) => {
   const isApiAuthRoute = apiAuthPrefix.some((route) => pathname.startsWith(route));
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route));
 
   if (isApiAuthRoute) return NextResponse.next();
 
@@ -43,19 +44,27 @@ app.all("*", async (c) => {
     if (subdomain !== new URL(process.env.NEXT_PUBLIC_APP_URL!).host) {
       const [store] = await db.select({ id: storeTable.id }).from(storeTable).where(eq(storeTable.storeName, subdomain));
 
-      if (store?.id) {
-        const response = NextResponse.next();
-        response.cookies.set("subdomain", subdomain, {
-          httpOnly: false,
-          sameSite: "strict",
-        });
-        return response;
-      } else {
+      if (!store?.id) {
         // Redirect to error page if store does not exist
         return Response.error();
       }
     } else if (!pathname.startsWith(LANDING_PAGE_REDIRECT)) {
       return Response.redirect(new URL(LANDING_PAGE_REDIRECT, c.req.url));
+    }
+  }
+
+  // check for admin
+  if (isAdminRoute) {
+    const adminId = session?.user?.id;
+    if (!adminId) {
+      // Redirect to error page if user is not authenticated
+      return Response.error();
+    }
+    const [store] = await db.select({ id: storeTable.id }).from(storeTable).where(eq(storeTable.adminId, adminId));
+
+    if (!store?.id) {
+      // Redirect to error page if user is not admin
+      return Response.error();
     }
   }
 
