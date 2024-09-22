@@ -1,6 +1,6 @@
-import db from "@/db";
+/* import db from "@/db";
 
-import { userTable, storeTable, categoryTable, tagTable, brandTable, productTable, productPropertiesTable, productTagTable, promoCodeTable } from "@/db/schemas";
+import { userTable, storeTable, categoryTable, tagTable, brandTable, productTable, productTagTable, promoCodeTable } from "@/db/schemas";
 
 async function seedData() {
   // 1. Seed a user (store admin)
@@ -139,3 +139,4 @@ async function seedData() {
 }
 
 seedData().catch((error) => console.error(error));
+ */
