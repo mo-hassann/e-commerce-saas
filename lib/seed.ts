@@ -1,4 +1,4 @@
-/* import db from "@/db";
+import db from "@/db";
 
 import { userTable, storeTable, categoryTable, tagTable, brandTable, productTable, productTagTable, promoCodeTable } from "@/db/schemas";
 
@@ -16,14 +16,14 @@ async function seedData() {
     .returning();
 
   // 2. Seed a store
-  const [store] = await db
+  /*   const [store] = await db
     .insert(storeTable)
     .values({
       name: "Tech Store",
       description: "A store that sells tech gadgets.",
       adminId: adminUser.id, // Reference the admin user
     })
-    .returning();
+    .returning(); */
 
   // 3. Seed categories
   const [category1, category2] = await db
@@ -44,7 +44,7 @@ async function seedData() {
     .returning();
 
   // 6. Seed products
-  const products = await db
+  /*   const products = await db
     .insert(productTable)
     .values([
       {
@@ -59,6 +59,7 @@ async function seedData() {
         rating: "4.8",
         reviewedNumber: 120,
         purchases: 50,
+        name: "Apple"
       },
       {
         title: "MacBook Pro 2023",
@@ -72,6 +73,7 @@ async function seedData() {
         rating: "4.9",
         reviewedNumber: 200,
         purchases: 80,
+          name: "Apple"
       },
       {
         title: "Samsung Galaxy S23",
@@ -84,13 +86,15 @@ async function seedData() {
         rating: "4.7",
         reviewedNumber: 90,
         purchases: 70,
+          name: "Apple"
+          و
       },
       // Add more products up to 15...
     ])
-    .returning();
+    .returning(); */
 
   // 7. Seed product properties (for each product)
-  await db.insert(productPropertiesTable).values([
+  /*   await db.insert(productPropertiesTable).values([
     {
       productId: products[0].id,
       size: "M", // Enum: XS, S, M, L, XL, XXL
@@ -110,14 +114,14 @@ async function seedData() {
       stock: 30,
     },
     // Add properties for other products...
-  ]);
+  ]); */
 
   // 8. Seed product tags (for some products)
-  await db.insert(productTagTable).values([
+  /*   await db.insert(productTagTable).values([
     { productId: products[0].id, tagId: tagNew.id },
     { productId: products[1].id, tagId: tagHot.id },
     { productId: products[2].id, tagId: tagNew.id },
-  ]);
+  ]); */
 
   // 9. Seed promo codes
   await db.insert(promoCodeTable).values([
@@ -139,4 +143,3 @@ async function seedData() {
 }
 
 seedData().catch((error) => console.error(error));
- */
