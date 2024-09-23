@@ -2,7 +2,7 @@ import db from "@/db";
 import { userTable } from "@/db/schemas";
 import { signInFormSchema, signUpFormSchema } from "@/validators/forms";
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 
 import bcrypt from "bcryptjs";
@@ -10,31 +10,36 @@ import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
 import { generateRandomUserName } from "@/lib/auth/user";
 import { isRedirectError } from "next/dist/client/components/redirect";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { curStore } from "@/lib/server/get-cur-store";
 
 const app = new Hono()
-  .post("/sign-up", zValidator("json", signUpFormSchema), async (c) => {
+  .post("/sign-up", curStore(), zValidator("json", signUpFormSchema), async (c) => {
     try {
-      const values = c.req.valid("json");
+      const user = c.req.valid("json");
+      const store = c.get("store");
 
-      // check if the user with this email is already exist
-      const [existingUser] = await db.select({ id: userTable.id }).from(userTable).where(eq(userTable.email, values.email));
+      // check if the email already exists in the store
+      const [existingUser] = await db
+        .select({ id: userTable.id })
+        .from(userTable)
+        .where(and(eq(userTable.storeId, store.id), eq(userTable.email, user.email)));
+
+      if (existingUser) return c.json({ errorMessage: "user with this email already exist" }, 400);
 
       if (existingUser) {
         return c.json({ errorMessage: "user with this email is already exist" }, 400);
       }
 
       // create random unique user name because it require in the db and user can change this userName in their profile after registration and login successfully
-      const username = generateRandomUserName(values.name);
+      const username = generateRandomUserName(user.name);
 
       // hash the password before send it to the db
-      const hashedPassword = bcrypt.hashSync(values.password, 8);
+      const hashedPassword = bcrypt.hashSync(user.password, 8);
 
       // add the user to the db
       await db
         .insert(userTable)
-        .values({ ...values, username, password: hashedPassword })
+        .values({ ...user, storeId: store.id, username, password: hashedPassword })
         .returning({ name: userTable.name });
 
       return c.json({ message: "user added successfully" });

@@ -16,3 +16,9 @@ export const signUpFormSchema = z
     confirmPassword: z.string(),
   })
   .refine((check) => check.password === check.confirmPassword, { message: "passwords must mach", path: ["confirmPassword"] });
+
+export const editUserFormSchema = z.object({
+  username: z.string().min(2, "Username must be at least 2 characters."),
+  name: z.string().min(1, "Name is required"),
+  email: z.string().min(1, "Email is required").email("Invalid email"),
+});

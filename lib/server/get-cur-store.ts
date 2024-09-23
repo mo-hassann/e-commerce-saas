@@ -6,7 +6,7 @@ import { HTTPException } from "hono/http-exception";
 
 declare module "hono" {
   interface ContextVariableMap {
-    store: { id: string; storeName: string };
+    store: { id: string; storeName: string; adminId: string };
   }
 }
 
@@ -28,7 +28,7 @@ export function curStore(): MiddlewareHandler {
         });
         throw new HTTPException(403, { res });
       }
-      const [store] = await db.select({ id: storeTable.id, storeName: storeTable.storeName }).from(storeTable).where(eq(storeTable.storeName, subdomain));
+      const [store] = await db.select({ id: storeTable.id, storeName: storeTable.storeName, adminId: storeTable.adminId }).from(storeTable).where(eq(storeTable.storeName, subdomain));
 
       if (!store) {
         const res = new Response("no store", {

@@ -12,6 +12,7 @@ export const userTable = pgTable("user", {
   image: text("image"),
   dateOfBirth: date("date_of_birth"),
   role: roleEnum("role").notNull().default("USER"), // Role for users (USER, ADMIN)
+  storeId: uuid("store_id").notNull(),
 });
 
 // Store table
