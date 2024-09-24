@@ -19,21 +19,27 @@ export const storeRelations = relations(storeTable, ({ one, many }) => ({
   }), // A store has one admin (user)
   products: many(productTable), // A store can have many products
   promoCodes: many(promoCodeTable), // A store can have many promo codes (work only in this store)
+  categories: many(categoryTable), // A store can have many categories
+  tags: many(tagTable), // A store can have many tags
+  brands: many(brandTable), // A store can have many brands
 }));
 
 // Category relations
-export const categoryRelations = relations(categoryTable, ({ many }) => ({
+export const categoryRelations = relations(categoryTable, ({ many, one }) => ({
   products: many(productTable), // A category can have many products
+  store: one(storeTable), // A category can have one store
 }));
 
 // Tag relations
-export const tagRelations = relations(tagTable, ({ many }) => ({
+export const tagRelations = relations(tagTable, ({ many, one }) => ({
   productTags: many(productTagTable), // A tag can be linked to many product-tag relationships
+  store: one(storeTable), // A tag can be linked to one store
 }));
 
 // Brand relations
-export const brandRelations = relations(brandTable, ({ many }) => ({
+export const brandRelations = relations(brandTable, ({ many, one }) => ({
   products: many(productTable), // A brand can have many products
+  store: one(storeTable), // A brand can be linked to one store
 }));
 
 // Product relations

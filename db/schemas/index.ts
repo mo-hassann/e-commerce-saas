@@ -31,18 +31,27 @@ export const storeTable = pgTable("store", {
 export const categoryTable = pgTable("category", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   name: varchar("name", { length: 255 }).notNull(),
+  storeId: uuid("store_id")
+    .references(() => storeTable.id)
+    .notNull(),
 });
 
 // Tag table
 export const tagTable = pgTable("tag", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   name: varchar("name", { length: 255 }).notNull(), // e.g., "new", "hot"
+  storeId: uuid("store_id")
+    .references(() => storeTable.id)
+    .notNull(),
 });
 
 // Brand table
 export const brandTable = pgTable("brand", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
   name: varchar("name", { length: 255 }).notNull(),
+  storeId: uuid("store_id")
+    .references(() => storeTable.id)
+    .notNull(),
 });
 
 // Product table

@@ -2,9 +2,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 
 import useUserSheet from "@/hooks/dashboard/use-user-sheet";
 import useGetUser from "@/query-hooks/dashboard/use-get-user";
-import Spinner from "../global/spinner";
-import NewUserForm from "./new-user-form";
-import EditUserForm from "./edit-user-form";
+import Spinner from "../../global/spinner";
+import NewUserForm from "../forms/new-user-form";
+import EditUserForm from "../forms/edit-user-form";
 
 export default function UserSheet() {
   const { isOpen, onClose, userId } = useUserSheet();

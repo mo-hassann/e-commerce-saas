@@ -1,6 +1,7 @@
 "use client";
 
-import UserSheet from "@/components/dashboard/user-sheet";
+import CategorySheet from "@/components/dashboard/sheets/category-sheet";
+import UserSheet from "@/components/dashboard/sheets/user-sheet";
 import CartSheet from "@/components/product/cart-sheet";
 
 export default function SheetProvider() {
@@ -8,6 +9,7 @@ export default function SheetProvider() {
     <>
       <CartSheet />
       <UserSheet />
+      <CategorySheet />
     </>
   );
 }
