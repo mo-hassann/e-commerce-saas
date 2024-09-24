@@ -11,7 +11,8 @@ import { getCookie, getSignedCookie, setCookie, setSignedCookie, deleteCookie } 
 const app = new Hono();
 
 app.all("*", async (c) => {
-  const session = await auth();
+  return NextResponse.next();
+  /*   const session = await auth();
 
   const pathname = new URL(c.req.url).pathname;
   const isAuthenticated = !!session?.user;
@@ -68,7 +69,7 @@ app.all("*", async (c) => {
     }
   }
 
-  return NextResponse.next();
+  return NextResponse.next(); */
 });
 
 export default app;
