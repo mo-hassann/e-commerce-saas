@@ -42,7 +42,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, state, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "button";
   return (
-    <Comp className={cn(buttonVariants({ variant, size, className }))} disabled={state === "loading" || props.disabled} ref={ref} {...props}>
+    <Comp className={cn(buttonVariants({ variant, size, className }))} disabled={props.disabled || state === "loading"} ref={ref} {...props}>
       <>
         {state === "loading" && <Spinner className="mr-1.5" />}
         {props.children}

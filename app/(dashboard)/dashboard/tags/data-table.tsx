@@ -6,8 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useUserSheet from "@/hooks/dashboard/use-user-sheet";
-import useCategorySheet from "@/hooks/dashboard/use-category-sheet";
-import useDeleteCategories from "@/query-hooks/categories/use-delete-categories";
+import useTagSheet from "@/hooks/dashboard/use-tag-sheet";
+import useDeleteTags from "@/query-hooks/tags/use-delete-tags";
 import useConfirm from "@/hooks/use-confirm";
 
 interface DataTableProps<TData, TValue> {
@@ -35,25 +35,26 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
       rowSelection,
     },
   });
-  const categorySheet = useCategorySheet();
-  const categories = table.getFilteredSelectedRowModel();
-  const categoriesIds = categories.rows.map((row) => (row.original as any).id);
+  const tagSheet = useTagSheet();
 
-  const deleteCategoriesMutation = useDeleteCategories();
+  const tags = table.getFilteredSelectedRowModel();
+  const tagsIds = tags.rows.map((row) => (row.original as any).id);
+
+  const deleteTagsMutation = useDeleteTags();
   const [ConfirmationDialog, confirm] = useConfirm();
 
   return (
     <div>
       <ConfirmationDialog />
       <div className="flex items-center justify-between py-2">
-        <Input placeholder="Filter categories..." value={(table.getColumn("name")?.getFilterValue() as string) ?? ""} onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)} className="max-w-sm" />
+        <Input placeholder="Filter tags..." value={(table.getColumn("name")?.getFilterValue() as string) ?? ""} onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)} className="max-w-sm" />
         <div className="space-x-2">
-          {categoriesIds.length > 0 && (
-            <Button onClick={async () => (await confirm()) && deleteCategoriesMutation.mutate({ ids: categoriesIds })} state={deleteCategoriesMutation.isPending ? "loading" : "default"} variant="ghost" className="bg-destructive/5 text-destructive hover:bg-destructive hover:text-white">
+          {tagsIds.length > 0 && (
+            <Button onClick={async () => (await confirm()) && deleteTagsMutation.mutate({ ids: tagsIds })} state={deleteTagsMutation.isPending ? "loading" : "default"} variant="ghost" className="bg-destructive/5 text-destructive hover:bg-destructive hover:text-white">
               Delete
             </Button>
           )}
-          <Button onClick={() => categorySheet.onOpen()}>New Category</Button>
+          <Button onClick={() => tagSheet.onOpen()}>New Tag</Button>
         </div>
       </div>
 

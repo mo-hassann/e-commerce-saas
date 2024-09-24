@@ -6,6 +6,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useUserSheet from "@/hooks/dashboard/use-user-sheet";
+import useDeleteUsers from "@/query-hooks/dashboard/delete-users";
+import useConfirm from "@/hooks/use-confirm";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -33,12 +35,25 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     },
   });
   const userSheet = useUserSheet();
+  const users = table.getFilteredSelectedRowModel();
+  const usersIds = users.rows.map((row) => (row.original as any).id);
+
+  const deleteUsersMutation = useDeleteUsers();
+  const [ConfirmationDialog, confirm] = useConfirm();
 
   return (
     <div>
+      <ConfirmationDialog />
       <div className="flex items-center justify-between py-2">
-        <Input placeholder="Filter emails..." value={(table.getColumn("email")?.getFilterValue() as string) ?? ""} onChange={(event) => table.getColumn("email")?.setFilterValue(event.target.value)} className="max-w-sm" />
-        <Button onClick={() => userSheet.onOpen()}>New User</Button>
+        <Input placeholder="Filter users..." value={(table.getColumn("name")?.getFilterValue() as string) ?? ""} onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)} className="max-w-sm" />
+        <div className="space-x-2">
+          {usersIds.length > 0 && (
+            <Button onClick={async () => (await confirm()) && deleteUsersMutation.mutate({ ids: usersIds })} state={deleteUsersMutation.isPending ? "loading" : "default"} variant="ghost" className="bg-destructive/5 text-destructive hover:bg-destructive hover:text-white">
+              Delete
+            </Button>
+          )}
+          <Button onClick={() => userSheet.onOpen()}>New User</Button>
+        </div>
       </div>
 
       <div className="rounded-md border bg-white">

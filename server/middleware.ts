@@ -6,13 +6,10 @@ import db from "@/db";
 import { storeTable } from "@/db/schemas";
 import { eq } from "drizzle-orm";
 
-import { getCookie, getSignedCookie, setCookie, setSignedCookie, deleteCookie } from "hono/cookie";
-
 const app = new Hono();
 
 app.all("*", async (c) => {
-  return NextResponse.next();
-  /*   const session = await auth();
+  const session = await auth();
 
   const pathname = new URL(c.req.url).pathname;
   const isAuthenticated = !!session?.user;
@@ -69,7 +66,7 @@ app.all("*", async (c) => {
     }
   }
 
-  return NextResponse.next(); */
+  return NextResponse.next();
 });
 
 export default app;

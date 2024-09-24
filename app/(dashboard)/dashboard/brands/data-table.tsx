@@ -5,9 +5,8 @@ import { ColumnDef, flexRender, getCoreRowModel, useReactTable, getPaginationRow
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import useUserSheet from "@/hooks/dashboard/use-user-sheet";
-import useCategorySheet from "@/hooks/dashboard/use-category-sheet";
-import useDeleteCategories from "@/query-hooks/categories/use-delete-categories";
+import useBrandSheet from "@/hooks/dashboard/use-brand-sheet";
+import useDeleteBrands from "@/query-hooks/brands/use-delete-brands";
 import useConfirm from "@/hooks/use-confirm";
 
 interface DataTableProps<TData, TValue> {
@@ -35,25 +34,25 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
       rowSelection,
     },
   });
-  const categorySheet = useCategorySheet();
-  const categories = table.getFilteredSelectedRowModel();
-  const categoriesIds = categories.rows.map((row) => (row.original as any).id);
+  const brandSheet = useBrandSheet();
+  const brands = table.getFilteredSelectedRowModel();
+  const brandsIds = brands.rows.map((row) => (row.original as any).id);
 
-  const deleteCategoriesMutation = useDeleteCategories();
+  const deleteBrandsMutation = useDeleteBrands();
   const [ConfirmationDialog, confirm] = useConfirm();
 
   return (
     <div>
       <ConfirmationDialog />
       <div className="flex items-center justify-between py-2">
-        <Input placeholder="Filter categories..." value={(table.getColumn("name")?.getFilterValue() as string) ?? ""} onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)} className="max-w-sm" />
+        <Input placeholder="Filter brands..." value={(table.getColumn("name")?.getFilterValue() as string) ?? ""} onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)} className="max-w-sm" />
         <div className="space-x-2">
-          {categoriesIds.length > 0 && (
-            <Button onClick={async () => (await confirm()) && deleteCategoriesMutation.mutate({ ids: categoriesIds })} state={deleteCategoriesMutation.isPending ? "loading" : "default"} variant="ghost" className="bg-destructive/5 text-destructive hover:bg-destructive hover:text-white">
+          {brandsIds.length > 0 && (
+            <Button onClick={async () => (await confirm()) && deleteBrandsMutation.mutate({ ids: brandsIds })} state={deleteBrandsMutation.isPending ? "loading" : "default"} variant="ghost" className="bg-destructive/5 text-destructive hover:bg-destructive hover:text-white">
               Delete
             </Button>
           )}
-          <Button onClick={() => categorySheet.onOpen()}>New Category</Button>
+          <Button onClick={() => brandSheet.onOpen()}>New Brand</Button>
         </div>
       </div>
 
