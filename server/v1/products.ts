@@ -7,8 +7,9 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
 import { and, eq, sql, desc, inArray, asc } from "drizzle-orm";
-import { brandTable, categoryTable, productColorTable, productImageTable, productSizesTable, productTable, productTagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
+import { brandTable, categoryTable, productColorTable, productImageTable, productSizesTable, productTable, productTagTable, promoCodeTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
 import { productSearchFilters } from "@/validators/products";
+import { curStore } from "@/lib/server/get-cur-store";
 
 const app = new Hono()
   .get("/", zValidator("query", productSearchFilters), async (c) => {
@@ -63,6 +64,47 @@ const app = new Hono()
         )
         .orderBy(...orderConditions)
         .groupBy(productTable.id);
+      return c.json({ data: products });
+    } catch (error: any) {
+      return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
+    }
+  })
+  .get("/dashboard-products", verifyAuth(), curStore(), async (c) => {
+    const { session } = c.get("authUser");
+    const adminId = session.user?.id!;
+    const store = c.get("store");
+
+    // check for the cur user is the admin
+    if (store.adminId !== adminId) {
+      return c.json({ errorMessage: "You are not authorized to access this endpoint" }, 403);
+    }
+
+    try {
+      //get all products for this store to show it in the dashboard
+      const products = await db
+        .select({
+          id: productTable.id,
+          name: productTable.name,
+          brand: brandTable.name,
+          category: categoryTable.name,
+          oldPrice: productTable.oldPrice,
+          price: productTable.price,
+          reviewedNumber: productTable.reviewedNumber,
+          rating: productTable.rating,
+          purchases: productTable.purchases,
+          description: productTable.description,
+          stock: productTable.stock,
+          image: productImageTable.url,
+        })
+        .from(productTable)
+        .leftJoin(brandTable, eq(brandTable.id, productTable.brandId))
+        .leftJoin(categoryTable, eq(categoryTable.id, productTable.categoryId))
+        .leftJoin(productImageTable, eq(productImageTable.productId, productTable.id))
+        .leftJoin(promoCodeTable, eq(promoCodeTable.productId, productTable.id))
+        .where(eq(productTable.storeId, store.id))
+        .orderBy(desc(productTable.createdAt))
+        .groupBy(productTable.id, brandTable.name, categoryTable.name, productImageTable.url);
+
       return c.json({ data: products });
     } catch (error: any) {
       return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);

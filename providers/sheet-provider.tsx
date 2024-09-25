@@ -2,6 +2,7 @@
 
 import BrandSheet from "@/components/dashboard/sheets/brand-sheet";
 import CategorySheet from "@/components/dashboard/sheets/category-sheet";
+import ProductSheet from "@/components/dashboard/sheets/product-sheet";
 import TagSheet from "@/components/dashboard/sheets/tag-sheet";
 import UserSheet from "@/components/dashboard/sheets/user-sheet";
 import CartSheet from "@/components/product/cart-sheet";
@@ -14,6 +15,7 @@ export default function SheetProvider() {
       <CategorySheet />
       <BrandSheet />
       <TagSheet />
+      <ProductSheet />
     </>
   );
 }
