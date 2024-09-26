@@ -33,7 +33,7 @@ app.all("*", async (c) => {
   }
 
   // Check for subdomain and store existence
-  const host = c.req.header("host");
+  /*   const host = c.req.header("host");
 
   if (host) {
     const [subdomain] = host.split(".");
@@ -49,7 +49,7 @@ app.all("*", async (c) => {
     } else if (!pathname.startsWith(LANDING_PAGE_REDIRECT)) {
       return Response.redirect(new URL(LANDING_PAGE_REDIRECT, c.req.url));
     }
-  }
+  } */
 
   // check for admin
   if (isAdminRoute) {

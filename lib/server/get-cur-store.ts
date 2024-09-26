@@ -13,7 +13,7 @@ declare module "hono" {
 export function curStore(): MiddlewareHandler {
   return async (c, next) => {
     try {
-      const host = c.req.header("host");
+      /*       const host = c.req.header("host");
       if (!host) {
         const res = new Response("no host", {
           status: 400,
@@ -27,8 +27,8 @@ export function curStore(): MiddlewareHandler {
           status: 403,
         });
         throw new HTTPException(403, { res });
-      }
-      const [store] = await db.select({ id: storeTable.id, storeName: storeTable.storeName, adminId: storeTable.adminId }).from(storeTable).where(eq(storeTable.storeName, subdomain));
+      } */
+      const [store] = await db.select({ id: storeTable.id, storeName: storeTable.storeName, adminId: storeTable.adminId }).from(storeTable).where(eq(storeTable.storeName, "techstore"));
 
       if (!store) {
         const res = new Response("no store", {

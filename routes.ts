@@ -28,7 +28,7 @@ export const apiAuthPrefix = ["/api"];
  * The default redirect path after logging in
  * @type {string}
  */
-export const DEFAULT_SIGN_IN_REDIRECT = "/";
+export const DEFAULT_SIGN_IN_REDIRECT = "/dashboard/products";
 export const LANDING_PAGE_REDIRECT = "/welcome";
 export const DEFAULT_SIGN_OUT_REDIRECT = "/sign-in";
 export const DEFAULT_AUTH_ERROR_REDIRECT = "/auth-error";
