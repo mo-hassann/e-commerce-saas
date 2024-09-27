@@ -175,6 +175,36 @@ export const columns: ColumnDef<DashboardProductsResType>[] = [
       return !!stock ? <span className="capitalize ml-5">{stock}</span> : <span className="capitalize ml-5 italic text-nowrap text-muted-foreground">not specified</span>;
     },
   },
+  {
+    accessorKey: "lastUpdate",
+    header: ({ column }) => {
+      return (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          <ArrowUpDown className="mr-2 h-4 w-4" />
+          Last Update
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const lastUpdate = (row.getValue("lastUpdate") as string) || null;
+      return !!lastUpdate ? <span className="capitalize ml-5">{new Date(lastUpdate).toDateString()}</span> : <span className="capitalize ml-5 italic text-nowrap text-muted-foreground">not specified</span>;
+    },
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => {
+      return (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+          <ArrowUpDown className="mr-2 h-4 w-4" />
+          Created At
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const createdAt = (row.getValue("createdAt") as string) || null;
+      return !!createdAt ? <span className="capitalize ml-5">{new Date(createdAt).toDateString()}</span> : <span className="capitalize ml-5 italic text-nowrap text-muted-foreground">not specified</span>;
+    },
+  },
 
   {
     id: "actions",

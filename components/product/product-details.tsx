@@ -31,12 +31,12 @@ export default function ProductDetails({ productId }: props) {
         <div className="flex gap-5">
           {product.brand && (
             <p className="capitalize font-semibold text-muted-foreground">
-              Brand: <span className="text-primary">{product.brand}</span>
+              Brand: <span className="text-primary">{product.brand.name}</span>
             </p>
           )}
           {product.category && (
             <p className="capitalize font-semibold text-muted-foreground">
-              Category: <span className="text-primary">{product.category}</span>
+              Category: <span className="text-primary">{product.category.name}</span>
             </p>
           )}
         </div>

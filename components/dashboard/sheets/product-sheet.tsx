@@ -10,27 +10,30 @@ import useGetBrands from "@/query-hooks/brands/use-get-brands";
 import useGetTags from "@/query-hooks/tags/use-get-tags";
 import useGetProductProperties from "@/query-hooks/product/use-get-product-properties";
 import { colorEnum, sizeEnum } from "@/db/schemas/enums";
+import useProduct from "@/query-hooks/product/use-product";
+import { productFormSchema } from "@/validators/forms";
 
 export default function ProductSheet() {
   const { isOpen, onClose, id } = useProductSheet();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-screen-xl w-[90%]">
         <DialogHeader>
           <DialogTitle>Product Dialog</DialogTitle>
         </DialogHeader>
-        <SheetBody productId={id} />
+        <SheetBody productId={id} onClose={onClose} />
       </DialogContent>
     </Dialog>
   );
 }
 
-const SheetBody = ({ productId }: { productId?: string }) => {
+const SheetBody = ({ productId, onClose }: { productId?: string; onClose: () => void }) => {
   const productQuery = useGetProduct({ productId });
   const categoryQuery = useGetCategories();
   const brandsQuery = useGetBrands();
   const tagsQuery = useGetTags();
+  const productMutation = useProduct();
 
   if (productId) {
     if (productQuery.isPending || productQuery.isLoading) return <Spinner />;
@@ -45,23 +48,26 @@ const SheetBody = ({ productId }: { productId?: string }) => {
   return (
     <ProductForm
       product={{
+        id: product?.id,
         name: product?.name || "",
-        price: +(product?.price || 1),
-        oldPrice: +(product?.oldPrice || 0) || undefined,
-        description: product?.description || "",
-        images: product?.productImages.map(({ id }) => id) || [],
-        tagsIds: [],
-        quantity: 0,
-        brandId: undefined,
-        categoryId: "",
-        colors: product?.properties.colors.map(({ color }) => color) || [],
-        sizes: product?.properties.sizes.map(({ size }) => size) || [],
+        price: +(product?.price || 0),
+        oldPrice: Number(product?.oldPrice) || undefined,
+        description: product?.description || undefined,
+        images: product?.productImages.map(({ id }) => id),
+        stock: product?.stock || undefined,
+        brandId: product?.brand?.id,
+        categoryId: product?.category?.id,
+        tagsIds: product?.tags.map((tag) => tag.id),
+        colors: product?.properties.colors.map(({ color }) => color),
+        sizes: product?.properties.sizes.map(({ size }) => size),
       }}
-      tags={tagsQuery.data}
       brands={brandsQuery.data}
       categories={categoryQuery.data}
-      colors={colorEnum.enumValues}
+      tags={tagsQuery.data}
       sizes={sizeEnum.enumValues}
+      colors={colorEnum.enumValues}
+      onSubmit={(values) => productMutation.mutate(values, { onSuccess: () => onClose() })}
+      isLoading={productMutation.isPending}
     />
   );
 };

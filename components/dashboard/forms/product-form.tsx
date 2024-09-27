@@ -1,20 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 import { productFormSchema as FormSchema } from "@/validators/forms";
-// import useProduct from "@/query-hooks/dashboard/use-new-product";
-import useProductSheet from "@/hooks/dashboard/use-product-sheet";
+
 import { cn } from "@/lib/utils";
-import { ColorT, SizeT } from "@/db/schemas/enums";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import SelectBox from "@/components/ui/select-box";
 
 type props = {
   product: z.infer<typeof FormSchema>;
@@ -23,102 +24,107 @@ type props = {
   tags: { id: string; name: string }[];
   colors: string[];
   sizes: string[];
+
+  onSubmit: (values: z.infer<typeof FormSchema>) => void;
+  isLoading?: boolean;
 };
 
-export default function ProductForm({ product, brands, categories, tags }: props) {
-  //   const productMutation = useProduct();
-  const productSheet = useProductSheet();
+export default function ProductForm({ product, brands, categories, tags, colors, sizes, isLoading, onSubmit }: props) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       ...product,
     },
-    // disabled: productMutation.isPending,
+    disabled: isLoading,
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    // productMutation.mutate(data, {
-    //   onSuccess: () => {
-    //     form.reset();
-    //     productSheet.onClose();
-    //   },
-    // });
-  }
-
-  const [curPrice, setCurPrice] = useState(0);
-  const [curOldPrice, setCurOldPice] = useState<number | undefined>(0);
-  const discount = curOldPrice ? Math.round(Math.abs(1 - curOldPrice / curPrice) * 100) : null;
+  // for calculating the discount
+  const price = +useWatch({
+    control: form.control,
+    name: "price",
+  });
+  const oldPrice = +(
+    useWatch({
+      control: form.control,
+      name: "oldPrice",
+    }) || "0"
+  );
+  const [discount, setDiscount] = useState(0);
 
   useEffect(() => {
-    if (!curOldPrice) return;
-    if (curPrice > curOldPrice) setCurOldPice(0);
-    // if(curPrice < curOldPrice) form.setValue("price", curOldPrice);
-  }, [curPrice, curOldPrice]);
+    if (!oldPrice || !price || price >= oldPrice) {
+      setDiscount(0);
+    } else {
+      setDiscount(Math.round(Math.abs(1 - price / oldPrice) * 100));
+    }
+  }, [oldPrice, price, form]);
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Name <span className="text-red-600 text-lg">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input placeholder="name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex items-center gap-3">
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="grid lg:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="price"
+            name="name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  Price <span className="text-red-600 text-lg">*</span>
+                  Name <span className="text-red-600 text-lg leading-none">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="price" {...field} onChange={(e) => setCurPrice(+e.target.value > 0 ? +e.target.value : 0)} value={curPrice} />
+                  <Input placeholder="name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+          <div className="flex gap-3">
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Price <span className="text-red-600 text-lg leading-none">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} step="0.01" placeholder="price" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="oldPrice"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Old Price</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="old price" min={0} step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className={cn("size-12 rounded-full bg-red-600 flex items-center justify-center text-white mt-6 opacity-20 flex-shrink-0", discount && "opacity-100")}>{discount}%</div>
+          </div>
           <FormField
             control={form.control}
-            name="oldPrice"
+            name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Old Price</FormLabel>
+                <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="old price" {...field} onChange={(e) => setCurOldPice(+e.target.value && +e.target.value > 0 ? +e.target.value : 0)} value={curOldPrice} />
+                  <Suspense fallback={"loading..."}>
+                    <ReactQuill theme="snow" {...field} className="[&_.ql-container]:min-h-52 [&_.ql-toolbar]:rounded-t-md [&_.ql-container]:rounded-b-md" />
+                  </Suspense>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <div className={cn("size-12 rounded-full bg-red-600 flex items-center justify-center text-white mt-auto opacity-0", discount && "opacity-100")}>{discount}%</div>
-        </div>
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Input placeholder="description..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
-        <div className="flex items-center gap-3">
           <FormField
             control={form.control}
             name="brandId"
@@ -167,9 +173,62 @@ export default function ProductForm({ product, brands, categories, tags }: props
               </FormItem>
             )}
           />
-        </div>
 
-        <Button type="submit" /* state={productMutation.isPending ? "loading" : "default"} */>Submit</Button>
+          <FormField
+            control={form.control}
+            name="tagsIds"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tags</FormLabel>
+                <FormControl>
+                  <SelectBox options={tags.map((tag) => ({ value: tag.id, label: tag.name }))} value={field.value} onChange={field.onChange} placeholder="Select tag..." inputPlaceholder="Search tags" emptyPlaceholder="No tag found." multiple />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="colors"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Colors</FormLabel>
+                <SelectBox
+                  options={colors.map((color) => ({
+                    value: color,
+                    label: (
+                      <div className="flex items-center gap-2">
+                        <div className="size-5 rounded-full" style={{ background: color }} />
+                        <div>{color}</div>
+                      </div>
+                    ),
+                  }))}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Select color..."
+                  inputPlaceholder="Search colors"
+                  emptyPlaceholder="No color found."
+                  multiple
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="sizes"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Sizes</FormLabel>
+                <SelectBox options={sizes.map((size) => ({ value: size, label: size }))} value={field.value} onChange={field.onChange} placeholder="Select size..." inputPlaceholder="Search size" emptyPlaceholder="No size found." multiple />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <Button className="ml-auto mt-3 flex" type="submit" state={isLoading ? "loading" : "default"}>
+          Submit
+        </Button>
       </form>
     </Form>
   );

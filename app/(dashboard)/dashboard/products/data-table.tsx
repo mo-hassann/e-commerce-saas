@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import useConfirm from "@/hooks/use-confirm";
 import useProductSheet from "@/hooks/dashboard/use-product-sheet";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -21,7 +21,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({ stock: false, purchases: false });
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({ stock: false, purchases: false, lastUpdate: false, createdAt: false });
   const table = useReactTable({
     data,
     columns,
@@ -33,6 +33,11 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
     onColumnVisibilityChange: setColumnVisibility,
+    initialState: {
+      pagination: {
+        pageSize: 5, //custom default page size
+      },
+    },
     state: {
       sorting,
       columnFilters,
@@ -97,7 +102,15 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell
+                      onClick={() => {
+                        const id = (cell.row.original as { id: string }).id;
+                        productSheet.onOpen(id);
+                      }}
+                      key={cell.id}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -114,10 +127,12 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground ml-1 mr-auto">{`${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} selected.`}</div>
         <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+          <ArrowLeft className="mr-1" size={16} />
           Previous
         </Button>
         <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
           Next
+          <ArrowRight className="ml-1" size={16} />
         </Button>
       </div>
     </div>

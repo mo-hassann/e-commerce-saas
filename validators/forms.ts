@@ -26,20 +26,25 @@ export const editUserFormSchema = z.object({
 
 export const productFormSchema = z
   .object({
+    id: z.string().uuid().optional(),
     name: z.string().min(1, "Name is required"),
     description: z.string().optional(),
     price: z.coerce.number().min(1, "Price is required"),
-    oldPrice: z.coerce.number().min(1, "Price is required").optional(),
-    quantity: z.coerce.number().min(1, "Quantity is required"),
+    oldPrice: z.coerce
+      .number()
+      .min(0, "Old Price must be positive")
+      .optional()
+      .transform((val) => (val === 0 ? undefined : val)),
+    stock: z.coerce.number().min(1, "Quantity in Stock must be positive number.").optional(),
     images: z.array(z.string().url()).optional(),
     brandId: z.string().uuid().optional(),
     categoryId: z.string().uuid().optional(),
-    tagsIds: z.array(z.string().uuid()).optional(),
+    tagsIds: z.array(z.string()).optional(),
     sizes: z.array(z.enum(sizeEnum.enumValues)).optional(),
     colors: z.array(z.enum(colorEnum.enumValues)).optional(),
   })
   .refine(
-    (check) => (check.oldPrice ? check.price <= check.oldPrice : true),
+    (check) => (check.oldPrice ? +check.price < +check.oldPrice : true),
     // make sure that the price is smaller than the old price
-    { message: "Price must be smaller or equal to old price", path: ["price"] }
+    { message: "Old Price must be greater than price", path: ["oldPrice"] }
   );
