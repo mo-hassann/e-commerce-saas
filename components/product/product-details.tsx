@@ -6,6 +6,9 @@ import AddToCartProductForm from "./add-to-cart-product-form";
 import ProductRating from "./product-rating";
 import useGetProduct from "@/query-hooks/product/use-get-product";
 import Spinner from "../global/spinner";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.bubble.css";
+import { Suspense } from "react";
 
 type props = {
   productId: string;
@@ -53,7 +56,11 @@ export default function ProductDetails({ productId }: props) {
         </div>
 
         <Separator className="my-4" />
-        <p>{product.description}</p>
+        {product.description && (
+          <Suspense fallback={"loading..."}>
+            <ReactQuill value={product.description} readOnly={true} theme={"bubble"} className="[&_.ql-editor]:text-[1.05rem]" />
+          </Suspense>
+        )}
         <AddToCartProductForm properties={product.properties} product={{ id: product.id, image: product.productImages[0]?.url, name: product.name, oldPrice: product.oldPrice || undefined, price: product.price }} />
       </div>
     </div>
