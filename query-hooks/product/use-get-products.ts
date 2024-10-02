@@ -7,12 +7,12 @@ import { InferResponseType } from "hono";
 
 const $get = client.api.v1.products.$get;
 
-type reqT = InferRequestType<typeof $get>["query"];
+export type productReqT = InferRequestType<typeof $get>["query"];
 type resT = InferResponseType<typeof $get>;
 
 export type getProductsResType = Extract<resT, { data: any }>["data"][0];
 
-export default function useGetProducts(values: reqT) {
+export default function useGetProducts(values: productReqT) {
   const query = useQuery({
     queryKey: ["products", values],
     queryFn: async () => {

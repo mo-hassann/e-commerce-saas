@@ -9,12 +9,14 @@ import useProductSheet from "@/hooks/dashboard/use-product-sheet";
 import useConfirm from "@/hooks/use-confirm";
 import { formatCurrency } from "@/lib/format-money";
 import { cn } from "@/lib/utils";
+import useDeleteProducts from "@/query-hooks/product/use-delete-products";
 import { DashboardProductsResType } from "@/query-hooks/product/use-get-dashboard-products";
 
 // import useDeleteProducts from "@/query-hooks/products/use-delete-products";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
+import React from "react";
 import { toast } from "sonner";
 
 export const columns: ColumnDef<DashboardProductsResType>[] = [
@@ -212,11 +214,11 @@ export const columns: ColumnDef<DashboardProductsResType>[] = [
       const products = table.getFilteredSelectedRowModel();
       const productsIds = products.rows.map((row) => row.original.id);
 
-      // const deleteProductsMutation = useDeleteProducts();
+      const deleteProductsMutation = useDeleteProducts();
       const [ConfirmationDialog, confirm] = useConfirm();
 
       return (
-        <>
+        <React.Fragment>
           <ConfirmationDialog />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -227,17 +229,17 @@ export const columns: ColumnDef<DashboardProductsResType>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              {/* <DropdownMenuItem disabled={productsIds.length === 0} onClick={async () => (await confirm()) && deleteProductsMutation.mutate({ ids: productsIds })} className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-none">
+              <DropdownMenuItem disabled={productsIds.length === 0} onClick={async () => (await confirm()) && deleteProductsMutation.mutate({ ids: productsIds })} className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-none">
                 Delete Products
-              </DropdownMenuItem> */}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </>
+        </React.Fragment>
       );
     },
     cell: function Cell({ row }) {
       const product = row.original;
-      // const deleteProductsMutation = useDeleteProducts();
+      const deleteProductsMutation = useDeleteProducts();
       const productSheet = useProductSheet();
       const [ConfirmationDialog, confirm] = useConfirm();
 
@@ -263,9 +265,9 @@ export const columns: ColumnDef<DashboardProductsResType>[] = [
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => productSheet.onOpen(product.id)}>Edit</DropdownMenuItem>
-              {/* <DropdownMenuItem onClick={async () => (await confirm()) && deleteProductsMutation.mutate({ ids: [product.id] })} className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-none">
+              <DropdownMenuItem onClick={async () => (await confirm()) && deleteProductsMutation.mutate({ ids: [product.id] })} className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold transition-none">
                 Delete
-              </DropdownMenuItem> */}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </>

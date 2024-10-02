@@ -11,6 +11,7 @@ import useConfirm from "@/hooks/use-confirm";
 import useProductSheet from "@/hooks/dashboard/use-product-sheet";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
+import useDeleteProducts from "@/query-hooks/product/use-delete-products";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -49,7 +50,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
   const products = table.getFilteredSelectedRowModel();
   const productsIds = products.rows.map((row) => (row.original as any).id);
 
-  // const deleteProductsMutation = useDeleteProducts();
+  const deleteProductsMutation = useDeleteProducts();
   const [ConfirmationDialog, confirm] = useConfirm();
 
   return (
@@ -58,12 +59,13 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
       <div className="flex items-center justify-between py-2">
         <Input placeholder="Filter products..." value={(table.getColumn("name")?.getFilterValue() as string) ?? ""} onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)} className="max-w-sm" />
         <div className="space-x-2">
-          {/* {productsIds.length > 0 && (
+          {productsIds.length > 0 ? (
             <Button onClick={async () => (await confirm()) && deleteProductsMutation.mutate({ ids: productsIds })} state={deleteProductsMutation.isPending ? "loading" : "default"} variant="ghost" className="bg-destructive/5 text-destructive hover:bg-destructive hover:text-white">
               Delete
             </Button>
-          )} */}
-          <Button onClick={() => productSheet.onOpen()}>New Product</Button>
+          ) : (
+            <Button onClick={() => productSheet.onOpen()}>New Product</Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="ml-auto">
@@ -102,15 +104,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      onClick={() => {
-                        const id = (cell.row.original as { id: string }).id;
-                        productSheet.onOpen(id);
-                      }}
-                      key={cell.id}
-                    >
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))

@@ -7,7 +7,7 @@ import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
 import { and, eq, sql, desc, inArray, asc } from "drizzle-orm";
-import { brandTable, categoryTable, productColorTable, productImageTable, productSizesTable, productTable, productTagTable, promoCodeTable, tagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
+import { brandTable, categoryTable, productColorTable, productImageTable, productSizesTable, productTable, productTagTable, promoCodeTable, storeTable, tagTable, userFavoritedProductsTable, userProductInteractionTable, userPurchaseTable } from "@/db/schemas";
 import { productSearchFilters } from "@/validators/products";
 import { curStore } from "@/lib/server/get-cur-store";
 import { productFormSchema } from "@/validators/forms";
@@ -353,6 +353,35 @@ const app = new Hono()
       const sizes = await db.select().from(productSizesTable).where(eq(productSizesTable.productId, productId));
 
       return c.json({ data: { ...product, tags, properties: { colors, sizes }, productImages } });
+    } catch (error: any) {
+      return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
+    }
+  })
+  .delete("/", curStore(), verifyAuth(), zValidator("json", z.object({ ids: z.array(z.string().uuid()) })), async (c) => {
+    const { session } = c.get("authUser");
+
+    const adminId = session.user?.id!;
+    const store = c.get("store");
+    const { ids } = c.req.valid("json");
+
+    // check for the admin
+    if (store.adminId !== adminId) return c.json({ errorMessage: "you have no permeation to delete this brand" }, 400);
+
+    try {
+      const productsToDelete = db.$with("products_to_delete").as(
+        db
+          .select({ id: productTable.id })
+          .from(productTable)
+          .leftJoin(storeTable, eq(productTable.storeId, store.id))
+          .where(and(inArray(productTable.id, ids), eq(storeTable.adminId, adminId)))
+      );
+
+      await db
+        .with(productsToDelete)
+        .delete(productTable)
+        .where(inArray(productTable.id, sql`(select * from ${productsToDelete})`));
+
+      return c.json({ message: "products deleted successfully" });
     } catch (error: any) {
       return c.json({ errorMessage: error.message, cause: error.cause, error }, 400);
     }
